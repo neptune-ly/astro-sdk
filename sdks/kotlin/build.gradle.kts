@@ -30,7 +30,25 @@ kotlin {
 publishing {
     publications {
         create<MavenPublication>("maven") {
+            groupId = "ly.neptune.astro"
+            artifactId = "astro-kotlin"
+            version = "1.0.0"
             from(components["java"])
+            pom {
+                name.set("Astro Kotlin SDK")
+                description.set("Kotlin SDK for the Astro OpenWave payment gateway")
+                url.set("https://github.com/Tellesy/astro-sdk")
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Tellesy/astro-sdk")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: ""
+            }
         }
     }
 }

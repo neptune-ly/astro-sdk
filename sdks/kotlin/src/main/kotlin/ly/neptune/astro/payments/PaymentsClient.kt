@@ -3,7 +3,7 @@ package ly.neptune.astro.payments
 import ly.neptune.astro.HttpEngine
 import ly.neptune.astro.models.*
 
-class PaymentsClient(private val engine: HttpEngine) {
+class PaymentsClient internal constructor(private val engine: HttpEngine) {
 
     suspend fun createSession(request: CreateSessionRequest): PaymentSession =
         engine.post("/payments/sessions", request)
