@@ -1,0 +1,37 @@
+{
+  "name": "@neptune-astro/react",
+  "version": "1.0.0",
+  "description": "React hooks and components for OpenWave / Astro payments",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --external react",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch --external react",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["openwave", "astro", "react", "payments", "hooks"],
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@neptune-astro/sdk": "file:../astro-js",
+    "@neptune-astro/web-sdk": "file:../astro-web-sdk"
+  }
+}
