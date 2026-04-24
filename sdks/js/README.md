@@ -1,4 +1,4 @@
-# @neptune-astro/sdk
+# @neptune.fintech/astro-sdk
 
 Official JavaScript / TypeScript SDK for the **OpenWave / Astro** payment gateway.
 
@@ -7,13 +7,13 @@ Works in **Node.js**, **Deno**, and the **browser** (uses native `fetch` + `cryp
 ## Install
 
 ```bash
-npm install @neptune-astro/sdk
+npm install @neptune.fintech/astro-sdk
 ```
 
 ## Quick Start
 
 ```ts
-import { createClient } from '@neptune-astro/sdk'
+import { createClient } from '@neptune.fintech/astro-sdk'
 
 const astro = createClient({
   baseUrl: 'https://astro.neptune.ly',
@@ -112,7 +112,7 @@ await astro.identity.claimHandle({
 ### Webhook Verification
 
 ```ts
-import { WebhookReceiver } from '@neptune-astro/sdk'
+import { WebhookReceiver } from '@neptune.fintech/astro-sdk'
 
 const receiver = new WebhookReceiver(process.env.WEBHOOK_SECRET!)
 
@@ -132,7 +132,7 @@ await receiver.handle(rawBodyString, req.headers['x-openwave-signature'])
 ## Error Handling
 
 ```ts
-import { AstroRequestError } from '@neptune-astro/sdk'
+import { AstroRequestError } from '@neptune.fintech/astro-sdk'
 
 try {
   const session = await astro.payments.createSession({ ... })

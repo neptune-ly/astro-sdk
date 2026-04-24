@@ -1,5 +1,5 @@
 {
-  "name": "@neptune-astro/react",
+  "name": "@neptune.fintech/astro-react",
   "version": "1.0.0",
   "description": "React hooks and components for OpenWave / Astro payments",
   "type": "module",

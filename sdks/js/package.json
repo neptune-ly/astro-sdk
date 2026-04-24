@@ -1,5 +1,5 @@
 {
-  "name": "@neptune-astro/sdk",
+  "name": "@neptune.fintech/astro-sdk",
   "version": "1.0.0",
   "description": "Official JavaScript/TypeScript SDK for the OpenWave / Astro payment gateway",
   "type": "module",

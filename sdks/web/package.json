@@ -1,5 +1,5 @@
 {
-  "name": "@neptune-astro/web-sdk",
+  "name": "@neptune.fintech/astro-web",
   "version": "1.0.0",
   "description": "Drop-in checkout widget for OpenWave / Astro payments",
   "type": "module",
