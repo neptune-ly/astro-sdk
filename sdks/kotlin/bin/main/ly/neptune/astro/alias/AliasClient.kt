@@ -3,7 +3,7 @@ package ly.neptune.astro.alias
 import ly.neptune.astro.HttpEngine
 import ly.neptune.astro.models.*
 
-class AliasClient(private val engine: HttpEngine) {
+class AliasClient internal constructor(private val engine: HttpEngine) {
 
     suspend fun getProfile(alias: String): AliasProfile =
         engine.get("/alias/$alias")

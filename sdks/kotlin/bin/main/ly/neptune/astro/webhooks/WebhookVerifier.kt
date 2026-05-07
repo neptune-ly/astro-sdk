@@ -2,6 +2,8 @@ package ly.neptune.astro.webhooks
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -47,20 +49,12 @@ class WebhookReceiver(private val secret: String) {
             "Invalid webhook signature"
         }
         val parsed = WebhookVerifier.parse(rawBody)
-        val eventName = parsed.toString()
-            .let { json.parseToJsonElement(it) }
-            .let {
-                kotlinx.serialization.json.jsonObject(it)["event"]
-                    ?.let { el -> kotlinx.serialization.json.jsonPrimitive(el).content }
-            } ?: return
+        val eventName = (parsed as? JsonObject)
+            ?.get("event")
+            ?.let { (it as? JsonPrimitive)?.content }
+            ?: return
 
         handlers[eventName]?.forEach { it(parsed) }
         handlers["*"]?.forEach { it(parsed) }
     }
-
-    private fun kotlinx.serialization.json.jsonObject(el: JsonElement) =
-        el as? kotlinx.serialization.json.JsonObject ?: error("Not a JSON object")
-
-    private fun kotlinx.serialization.json.jsonPrimitive(el: JsonElement) =
-        el as? kotlinx.serialization.json.JsonPrimitive ?: error("Not a primitive")
 }

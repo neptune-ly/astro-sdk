@@ -6,7 +6,7 @@ import io.ktor.http.*
 import ly.neptune.astro.HttpEngine
 import ly.neptune.astro.models.*
 
-class OpenBankingClient(private val engine: HttpEngine) {
+class OpenBankingClient internal constructor(private val engine: HttpEngine) {
 
     suspend fun createConsent(request: CreateConsentRequest): Consent =
         engine.post("/ob/consents", request)
