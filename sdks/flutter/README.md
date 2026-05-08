@@ -1,6 +1,6 @@
-# astro_sdk — Astro Flutter/Dart SDK
+# astro_sdk — OpenWave Flutter/Dart SDK
 
-Flutter/Dart SDK for OpenWave/Astro payments. Works in Flutter apps, pure Dart backend, and Dart CLI.
+Flutter/Dart SDK for OpenWave payments. Works in Flutter apps, pure Dart backend, and Dart CLI.
 
 ## Installation
 

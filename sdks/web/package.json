@@ -1,7 +1,7 @@
 {
   "name": "@neptune.fintech/astro-web",
   "version": "1.0.0",
-  "description": "Drop-in checkout widget for OpenWave / Astro payments",
+  "description": "Drop-in checkout widget for OpenWave payments",
   "type": "module",
   "main": "./dist/astro.umd.js",
   "module": "./dist/astro.js",

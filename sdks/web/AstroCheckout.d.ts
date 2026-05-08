@@ -18,4 +18,7 @@ export declare class AstroCheckout {
     private handleOtpConfirm;
     private handleDismiss;
     private resolveTheme;
+    private escapeHtml;
+    private safeUrl;
+    private safeColor;
 }

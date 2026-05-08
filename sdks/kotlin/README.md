@@ -1,6 +1,6 @@
-# @neptune-astro/kotlin — Astro Kotlin SDK
+# @neptune-astro/kotlin — OpenWave Kotlin SDK
 
-Kotlin/JVM SDK for the OpenWave/Astro payment gateway. Uses Ktor HTTP client with coroutines.
+Kotlin/JVM SDK for OpenWave-compatible payment gateways. Uses Ktor HTTP client with coroutines.
 
 ## Installation
 

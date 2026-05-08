@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
@@ -24,6 +34,7 @@ __export(index_exports, {
   CheckoutButton: () => CheckoutButton,
   useAliasResolve: () => useAliasResolve,
   useAstro: () => useAstro,
+  useCheckout: () => useCheckout,
   useOpenBankingConsent: () => useOpenBankingConsent,
   usePaymentSession: () => usePaymentSession
 });
@@ -34,14 +45,14 @@ var import_react2 = require("react");
 
 // src/AstroProvider.tsx
 var import_react = require("react");
-var import_sdk = require("@neptune-astro/sdk");
+var import_astro_sdk = require("@neptune.fintech/astro-sdk");
 var import_jsx_runtime = require("react/jsx-runtime");
 var AstroContext = (0, import_react.createContext)(null);
 function AstroProvider({
   config,
   children
 }) {
-  const client = (0, import_react.useMemo)(() => new import_sdk.AstroClient(config), [config.baseUrl]);
+  const client = (0, import_react.useMemo)(() => new import_astro_sdk.AstroClient(config), [config.baseUrl, config.merchantKey, config.bankKey, config.adminKey]);
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AstroContext.Provider, { value: { client }, children });
 }
 function useAstro() {
@@ -65,7 +76,7 @@ function usePaymentSession() {
       setState({ session, loading: false, error: null });
       return session;
     } catch (err) {
-      const msg = err?.message ?? "Failed to create session";
+      const msg = formatSessionCreateError(err);
       setState({ session: null, loading: false, error: msg });
       return null;
     }
@@ -75,15 +86,108 @@ function usePaymentSession() {
   }, []);
   return { ...state, create, reset };
 }
+function formatSessionCreateError(err) {
+  const status = err?.status;
+  const code = err?.code;
+  if (status === 401 || status === 403) {
+    return "Merchant credential was rejected. Rotate or copy the current merchant access credential from the gateway portal and update the demo configuration.";
+  }
+  if (code && err?.message) return `${code}: ${err.message}`;
+  return err?.message ?? "Failed to create payment session";
+}
 
-// src/hooks/useAliasResolve.ts
+// src/hooks/useCheckout.ts
 var import_react3 = require("react");
-function useAliasResolve() {
-  const { client } = useAstro();
-  const [result, setResult] = (0, import_react3.useState)(null);
+var import_astro_sdk2 = require("@neptune.fintech/astro-sdk");
+function useCheckout(baseUrl, sessionToken) {
+  const client = new import_astro_sdk2.CheckoutClient(
+    // The CheckoutClient constructor accepts an HttpClient — we create one with no merchant key
+    // and optionally a session token via a minimal config object.
+    // Since CheckoutClient takes an HttpClient, we use the exported createCheckoutClient instead.
+    // See createCheckoutClient() in astro-sdk for direct usage outside React.
+    createMinimalHttpClient(baseUrl, sessionToken)
+  );
   const [loading, setLoading] = (0, import_react3.useState)(false);
   const [error, setError] = (0, import_react3.useState)(null);
-  const resolve = (0, import_react3.useCallback)(async (alias) => {
+  const resolvePayer = (0, import_react3.useCallback)(
+    async (sessionId, params) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await client.resolvePayer(sessionId, params);
+        return result;
+      } catch (e) {
+        setError(e?.message ?? "Failed to resolve payer");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client]
+  );
+  const selectAuth = (0, import_react3.useCallback)(
+    async (sessionId, params) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await client.selectAuth(sessionId, params);
+        return result;
+      } catch (e) {
+        setError(e?.message ?? "Failed to send auth challenge");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client]
+  );
+  const confirm = (0, import_react3.useCallback)(
+    async (sessionId, params) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await client.confirm(sessionId, params);
+        return result;
+      } catch (e) {
+        setError(e?.message ?? "Payment confirmation failed");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client]
+  );
+  return { resolvePayer, selectAuth, confirm, loading, error };
+}
+function createMinimalHttpClient(baseUrl, sessionToken) {
+  const base = baseUrl.replace(/\/$/, "");
+  const headers = { "Content-Type": "application/json" };
+  if (sessionToken) headers["X-Session-Token"] = sessionToken;
+  return {
+    post: async (path, body) => {
+      const res = await fetch(`${base}/api/v1${path}`, {
+        method: "POST",
+        headers,
+        body: body !== void 0 ? JSON.stringify(body) : void 0
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const e = json?.error ?? json?.message ?? `HTTP ${res.status}`;
+        throw new Error(typeof e === "string" ? e : JSON.stringify(e));
+      }
+      return json;
+    }
+  };
+}
+
+// src/hooks/useAliasResolve.ts
+var import_react4 = require("react");
+function useAliasResolve() {
+  const { client } = useAstro();
+  const [result, setResult] = (0, import_react4.useState)(null);
+  const [loading, setLoading] = (0, import_react4.useState)(false);
+  const [error, setError] = (0, import_react4.useState)(null);
+  const resolve = (0, import_react4.useCallback)(async (alias) => {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -98,7 +202,7 @@ function useAliasResolve() {
       setLoading(false);
     }
   }, [client]);
-  const reset = (0, import_react3.useCallback)(() => {
+  const reset = (0, import_react4.useCallback)(() => {
     setResult(null);
     setError(null);
   }, []);
@@ -106,14 +210,14 @@ function useAliasResolve() {
 }
 
 // src/hooks/useOpenBankingConsent.ts
-var import_react4 = require("react");
+var import_react5 = require("react");
 function useOpenBankingConsent() {
   const { client } = useAstro();
-  const [consent, setConsent] = (0, import_react4.useState)(null);
-  const [tokens, setTokens] = (0, import_react4.useState)(null);
-  const [loading, setLoading] = (0, import_react4.useState)(false);
-  const [error, setError] = (0, import_react4.useState)(null);
-  const createConsent = (0, import_react4.useCallback)(async (params) => {
+  const [consent, setConsent] = (0, import_react5.useState)(null);
+  const [tokens, setTokens] = (0, import_react5.useState)(null);
+  const [loading, setLoading] = (0, import_react5.useState)(false);
+  const [error, setError] = (0, import_react5.useState)(null);
+  const createConsent = (0, import_react5.useCallback)(async (params) => {
     setLoading(true);
     setError(null);
     try {
@@ -127,7 +231,7 @@ function useOpenBankingConsent() {
       setLoading(false);
     }
   }, [client]);
-  const exchangeCode = (0, import_react4.useCallback)(async (code, codeVerifier) => {
+  const exchangeCode = (0, import_react5.useCallback)(async (code, codeVerifier) => {
     if (!consent) return null;
     setLoading(true);
     setError(null);
@@ -147,7 +251,7 @@ function useOpenBankingConsent() {
       setLoading(false);
     }
   }, [client, consent]);
-  const revokeConsent = (0, import_react4.useCallback)(async () => {
+  const revokeConsent = (0, import_react5.useCallback)(async () => {
     if (!consent) return;
     await client.openBanking.revokeConsent(consent.consent_id);
     setConsent(null);
@@ -158,19 +262,24 @@ function useOpenBankingConsent() {
 
 // src/components/CheckoutButton.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
-var { checkout } = require("@neptune-astro/web-sdk");
+async function getCheckout() {
+  const mod = await import("@neptune.fintech/astro-web");
+  return mod.checkout;
+}
 function CheckoutButton({
   sessionId,
   gatewayUrl,
   theme = "auto",
+  branding,
   onSuccess,
   onFailed,
   label = "Pay Now",
   disabled,
   ...rest
 }) {
-  function handleClick() {
-    checkout({ sessionId, gatewayUrl, theme, onSuccess, onFailed });
+  async function handleClick() {
+    const checkout = await getCheckout();
+    checkout({ sessionId, gatewayUrl, theme, branding, onSuccess, onFailed });
   }
   return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { onClick: handleClick, disabled, ...rest, children: label });
 }
@@ -180,6 +289,7 @@ function CheckoutButton({
   CheckoutButton,
   useAliasResolve,
   useAstro,
+  useCheckout,
   useOpenBankingConsent,
   usePaymentSession
 });

@@ -1,5 +1,5 @@
 type Currency = 'LYD' | 'USD' | 'EUR' | 'GBP' | string;
-type PaymentStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'EXPIRED' | 'CANCELLED';
+type PaymentStatus = 'PENDING' | 'OTP_SENT' | 'PUSH_SENT' | 'PROCESSING' | 'SETTLEMENT_PENDING' | 'CONFIRMED' | 'COMPLETED' | 'FAILED' | 'EXPIRED' | 'CANCELLED';
 type MandateStatus = 'PENDING_CONSENT' | 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'EXPIRED';
 type ConsentStatus = 'PENDING' | 'ACTIVE' | 'REVOKED' | 'EXPIRED';
 type PaymentOrderStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REJECTED' | 'PENDING_SCA';
@@ -24,7 +24,7 @@ interface AstroError {
     detail?: string;
     request_id?: string;
 }
-type WebhookEvent = 'payment.completed' | 'payment.failed' | 'payment.expired' | 'mandate.activated' | 'mandate.cancelled' | 'mandate.charge.completed' | 'mandate.charge.failed' | 'consent.granted' | 'consent.revoked' | 'consent.expired' | 'payment_order.completed' | 'payment_order.failed' | 'payment_order.pending_sca' | 'payment_order.rejected';
+type WebhookEvent = 'payment.completed' | 'payment.settlement_pending' | 'payment.failed' | 'payment.expired' | 'mandate.activated' | 'mandate.cancelled' | 'mandate.charge.completed' | 'mandate.charge.failed' | 'consent.granted' | 'consent.revoked' | 'consent.expired' | 'payment_order.completed' | 'payment_order.failed' | 'payment_order.pending_sca' | 'payment_order.rejected';
 interface WebhookPayload<T = unknown> {
     event: WebhookEvent;
     api_version: string;
@@ -48,6 +48,7 @@ declare class HttpClient {
     setBankKey(key: string): void;
     setAdminKey(key: string): void;
     setSessionToken(token: string): void;
+    clearSessionToken(): void;
     request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T>;
     get<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T>;
     post<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<T>;
@@ -58,12 +59,22 @@ declare class HttpClient {
 interface CreateSessionParams {
     amount: number;
     currency: Currency;
-    destination: Destination;
+    destination?: Destination;
     description?: string;
     reference?: string;
     redirect_url?: string;
     webhook_url?: string;
     metadata?: Record<string, string>;
+}
+interface FeePreview {
+    bank_handle: string;
+    gross_amount: number;
+    gateway_fee: number;
+    bank_cut: number;
+    net_amount: number;
+    fee_type: string;
+    fee_value: number;
+    flat_fee: number;
 }
 interface PaymentSession {
     session_id: string;
@@ -78,6 +89,7 @@ interface PaymentSession {
     created_at: string;
     expires_at: string;
     completed_at?: string;
+    gateway_fee?: number;
 }
 interface ListSessionsParams {
     status?: PaymentStatus;
@@ -119,6 +131,7 @@ declare class PaymentsClient {
     createSession(params: CreateSessionParams): Promise<PaymentSession>;
     getSession(sessionId: string): Promise<PaymentSession>;
     listSessions(params?: ListSessionsParams): Promise<ListSessionsResponse>;
+    previewFee(bankHandle: string, amount: number): Promise<FeePreview>;
     cancelSession(sessionId: string): Promise<void>;
     createMandate(params: CreateMandateParams): Promise<Mandate>;
     getMandate(mandateId: string): Promise<Mandate>;
@@ -130,6 +143,71 @@ declare class PaymentsClient {
         charge_id: string;
         status: string;
     }>;
+}
+
+/**
+ * CheckoutClient — customer-facing session flow.
+ *
+ * This client is used exclusively by the hosted checkout page (astro-ui)
+ * and the official astro-web-sdk embedded checkout. It uses X-Session-Token
+ * for authentication, NOT a merchant API key.
+ *
+ * These endpoints are BLOCKED for merchant API keys by the CheckoutGuardFilter
+ * on the server. Merchants can only create sessions and poll status.
+ */
+interface ResolvePayerParams {
+    payer_alias?: string;
+    payer_iban?: string;
+}
+interface ResolvePayerResult {
+    customer_name: string;
+    phone_masked: string;
+    auth_modes: string[];
+    accounts: Array<{
+        iban: string;
+        account_name?: string;
+        currency: Currency;
+        is_default: boolean;
+    }>;
+}
+interface SelectAuthParams {
+    auth_mode: 'OTP' | 'PUSH';
+}
+interface SelectAuthResult {
+    auth_mode: 'OTP' | 'PUSH';
+    phone_masked?: string;
+    otp_expires_in_seconds?: number;
+    push_sent_to?: string;
+}
+interface ConfirmParams {
+    selected_iban: string;
+    otp_code?: string;
+    push_id?: string;
+}
+interface ConfirmResult {
+    status: string;
+    transfer_ref?: string;
+    redirect_url?: string;
+    message?: string;
+}
+declare class CheckoutClient {
+    private http;
+    constructor(http: HttpClient);
+    /**
+     * Resolve payer identity from alias or IBAN.
+     * Returns masked phone + available accounts for the customer to select from.
+     */
+    resolvePayer(sessionId: string, params: ResolvePayerParams): Promise<ResolvePayerResult>;
+    /**
+     * Customer selects authentication method (OTP or PUSH).
+     * The bank will send an OTP SMS or push notification.
+     */
+    selectAuth(sessionId: string, params: SelectAuthParams): Promise<SelectAuthResult>;
+    /**
+     * Customer confirms payment with OTP code or push approval.
+     * On success returns COMPLETED status and the bank transfer reference.
+     */
+    confirm(sessionId: string, params: ConfirmParams): Promise<ConfirmResult>;
 }
 
 interface AliasProfile {
@@ -352,6 +430,8 @@ declare class WebhookReceiver {
 
 declare class AstroClient {
     readonly payments: PaymentsClient;
+    /** Customer-facing checkout flow. Use with X-Session-Token — NOT a merchant API key. */
+    readonly checkout: CheckoutClient;
     readonly alias: AliasClient;
     readonly openBanking: OpenBankingClient;
     readonly identity: IdentityClient;
@@ -359,5 +439,19 @@ declare class AstroClient {
     constructor(config: AstroConfig);
 }
 declare function createClient(config: AstroConfig): AstroClient;
+/**
+ * Create a checkout-only client for the customer-facing payment flow.
+ * This client only exposes resolve-payer / select-auth / confirm.
+ * No merchant API key is set — authentication is via X-Session-Token.
+ *
+ * @example
+ * const checkout = createCheckoutClient({ baseUrl: 'https://pay.example.com', sessionToken: token })
+ * await checkout.resolvePayer(sessionId, { payer_alias: '09XXXXXXXX' })
+ */
+declare function createCheckoutClient(opts: {
+    baseUrl: string;
+    sessionToken?: string;
+    timeout?: number;
+}): CheckoutClient;
 
-export { type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, type ClaimHandleParams, type Consent, type ConsentStatus, type CreateConsentParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreateSessionParams, type Currency, type Destination, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type RegistryInfo, type ResolveResult, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createClient, parseWebhookPayload, verifyWebhookSignature };
+export { type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, CheckoutClient, type ClaimHandleParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreateSessionParams, type Currency, type Destination, type FeePreview, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type RegistryInfo, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };

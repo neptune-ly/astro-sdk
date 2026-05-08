@@ -1,6 +1,8 @@
-# @neptune-astro/web-sdk
+# @neptune.fintech/astro-web
 
-Drop-in checkout widget for **OpenWave / Astro** payments. Like Stripe.js — one function call opens a styled, mobile-responsive payment modal.
+Drop-in checkout widget for **Astro**, Neptune's OpenWave gateway. One function call opens a secure, branded, mobile-responsive authorization surface for one-time payments.
+
+The widget only receives a scoped `sessionId`. Your backend owns session creation, merchant keys, webhook verification, and fulfilment.
 
 ## Usage
 
@@ -29,11 +31,11 @@ Drop-in checkout widget for **OpenWave / Astro** payments. Like Stripe.js — on
 ### Via npm
 
 ```bash
-npm install @neptune-astro/web-sdk
+npm install @neptune.fintech/astro-web
 ```
 
 ```ts
-import { checkout } from '@neptune-astro/web-sdk'
+import { checkout } from '@neptune.fintech/astro-web'
 
 checkout({
   sessionId: 'ops_01HZGV...',
@@ -49,9 +51,9 @@ checkout({
 
 1. **Your backend** creates a payment session via `POST /payments/sessions` and returns the `session_id` to your frontend
 2. **You call `checkout({ sessionId })`** — the widget opens
-3. **Customer enters their NPT alias or IBAN** — widget verifies it with the gateway
-4. **Customer enters OTP** — sent to their registered phone by their bank
-5. **Payment completes** — `onSuccess` fires with the session details
+3. **Customer enters their NPT alias or IBAN** — Astro resolves it with the gateway and identity registry
+4. **Customer authenticates with bank SCA** — OTP or push approval is handled in the hosted surface
+5. **Payment completes** — `onSuccess` fires and Astro sends a signed webhook to your backend
 
 ## Flow Diagram
 
@@ -85,6 +87,7 @@ Your page                  Widget                    Astro Gateway
 - **Never put API keys in the frontend** — the widget uses only the `session_id` (not sensitive)
 - Session IDs are single-use and expire after 15 minutes
 - All gateway communication is HTTPS
+- Use your backend webhook as the source of truth for order fulfilment
 
 ## License
 

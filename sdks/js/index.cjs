@@ -33,11 +33,13 @@ __export(index_exports, {
   AliasClient: () => AliasClient,
   AstroClient: () => AstroClient,
   AstroRequestError: () => AstroRequestError,
+  CheckoutClient: () => CheckoutClient,
   HttpClient: () => HttpClient,
   IdentityClient: () => IdentityClient,
   OpenBankingClient: () => OpenBankingClient,
   PaymentsClient: () => PaymentsClient,
   WebhookReceiver: () => WebhookReceiver,
+  createCheckoutClient: () => createCheckoutClient,
   createClient: () => createClient,
   parseWebhookPayload: () => parseWebhookPayload,
   verifyWebhookSignature: () => verifyWebhookSignature
@@ -47,7 +49,7 @@ module.exports = __toCommonJS(index_exports);
 // src/client.ts
 var AstroRequestError = class extends Error {
   constructor(status, error) {
-    super(error.message);
+    super(error.message || `HTTP ${status}`);
     this.name = "AstroRequestError";
     this.status = status;
     this.code = error.code;
@@ -88,6 +90,9 @@ var HttpClient = class {
   setSessionToken(token) {
     this.defaultHeaders["X-Session-Token"] = token;
   }
+  clearSessionToken() {
+    delete this.defaultHeaders["X-Session-Token"];
+  }
   async request(method, path, body, extraHeaders) {
     const url = `${this.baseUrl}${path}`;
     const controller = new AbortController();
@@ -101,10 +106,15 @@ var HttpClient = class {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new AstroRequestError(res.status, json?.error ?? {
-          code: "UNKNOWN_ERROR",
-          message: `HTTP ${res.status}`
-        });
+        const j = json;
+        const raw = j?.error ?? (j?.code || j?.message ? j : null);
+        const errBody = typeof raw === "string" ? { code: `HTTP_${res.status}`, message: raw } : {
+          code: raw?.code ?? `HTTP_${res.status}`,
+          message: raw?.message ?? raw?.error ?? `HTTP ${res.status}`,
+          detail: raw?.detail,
+          request_id: raw?.request_id
+        };
+        throw new AstroRequestError(res.status, errBody);
       }
       return json;
     } finally {
@@ -142,6 +152,9 @@ var PaymentsClient = class {
   async listSessions(params) {
     return this.http.get("/payments/sessions", params);
   }
+  async previewFee(bankHandle, amount) {
+    return this.http.get("/payments/fee", { bankHandle, amount });
+  }
   async cancelSession(sessionId) {
     return this.http.post(`/payments/sessions/${sessionId}/cancel`);
   }
@@ -156,6 +169,43 @@ var PaymentsClient = class {
   }
   async chargeMandate(mandateId, params) {
     return this.http.post(`/recurring/mandates/${mandateId}/charge`, params);
+  }
+};
+
+// src/checkout/index.ts
+var CheckoutClient = class {
+  constructor(http) {
+    this.http = http;
+  }
+  /**
+   * Resolve payer identity from alias or IBAN.
+   * Returns masked phone + available accounts for the customer to select from.
+   */
+  async resolvePayer(sessionId, params) {
+    return this.http.post(
+      `/payments/sessions/${sessionId}/resolve-payer`,
+      params
+    );
+  }
+  /**
+   * Customer selects authentication method (OTP or PUSH).
+   * The bank will send an OTP SMS or push notification.
+   */
+  async selectAuth(sessionId, params) {
+    return this.http.post(
+      `/payments/sessions/${sessionId}/select-auth`,
+      params
+    );
+  }
+  /**
+   * Customer confirms payment with OTP code or push approval.
+   * On success returns COMPLETED status and the bank transfer reference.
+   */
+  async confirm(sessionId, params) {
+    return this.http.post(
+      `/payments/sessions/${sessionId}/confirm`,
+      params
+    );
   }
 };
 
@@ -322,6 +372,7 @@ var AstroClient = class {
   constructor(config) {
     this.http = new HttpClient(config);
     this.payments = new PaymentsClient(this.http);
+    this.checkout = new CheckoutClient(this.http);
     this.alias = new AliasClient(this.http);
     this.openBanking = new OpenBankingClient(this.http);
     this.identity = new IdentityClient(this.http);
@@ -330,16 +381,23 @@ var AstroClient = class {
 function createClient(config) {
   return new AstroClient(config);
 }
+function createCheckoutClient(opts) {
+  const http = new HttpClient({ baseUrl: opts.baseUrl, timeout: opts.timeout });
+  if (opts.sessionToken) http.setSessionToken(opts.sessionToken);
+  return new CheckoutClient(http);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AliasClient,
   AstroClient,
   AstroRequestError,
+  CheckoutClient,
   HttpClient,
   IdentityClient,
   OpenBankingClient,
   PaymentsClient,
   WebhookReceiver,
+  createCheckoutClient,
   createClient,
   parseWebhookPayload,
   verifyWebhookSignature

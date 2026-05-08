@@ -1,6 +1,6 @@
-# AstroSDK — Swift SDK
+# AstroSDK — OpenWave Swift SDK
 
-Swift SDK for the OpenWave/Astro payment gateway. Requires iOS 15+ / macOS 12+. Uses Swift Concurrency (`async/await`) and `CryptoKit`.
+Swift SDK for OpenWave-compatible payment gateways. Requires iOS 15+ / macOS 12+. Uses Swift Concurrency (`async/await`) and `CryptoKit`.
 
 ## Installation (Swift Package Manager)
 

@@ -1,8 +1,10 @@
 # @neptune.fintech/astro-sdk
 
-Official JavaScript / TypeScript SDK for the **OpenWave / Astro** payment gateway.
+Official JavaScript / TypeScript SDK for Astro, Neptune's OpenWave-compliant gateway.
 
 Works in **Node.js**, **Deno**, and the **browser** (uses native `fetch` + `crypto.subtle`).
+
+Use this SDK from trusted server-side code for payment sessions, subscription mandates, Open Banking token exchange, identity administration, and webhook verification.
 
 ## Install
 
@@ -34,6 +36,14 @@ console.log(session.checkout_url) // redirect customer here
 ```
 
 ## Modules
+
+| Module | Use it for | Runs where |
+|---|---|---|
+| `payments` | Checkout sessions, status, cancellation, recurring mandates | Backend |
+| `alias` | NPT alias lookup and linked account visibility | Backend or trusted internal tools |
+| `openBanking` | Consent creation, PKCE token exchange, accounts/balances/transactions | Backend |
+| `identity` | Registry-backed alias resolution and bank-vouched claims | Backend or bank integration |
+| `webhooks` | Signature verification and event dispatch | Backend webhook endpoint |
 
 ### `astro.payments`
 
@@ -74,6 +84,8 @@ const consent = await astro.openBanking.createConsent({
   code_challenge: '...', // PKCE S256
   code_challenge_method: 'S256',
 })
+// Redirect customer to consent.consent_url.
+// Astro shows TPP name, bank, requested scopes, account access, and SCA.
 
 // Exchange code for tokens
 const tokens = await astro.openBanking.exchangeCode({
