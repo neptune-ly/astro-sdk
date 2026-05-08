@@ -1,14 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <defs>
-    <linearGradient id="astro-a" x1="18" y1="48" x2="45" y2="14" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#3BC1EE"/>
-      <stop offset=".52" stop-color="#00A8AE"/>
-      <stop offset="1" stop-color="#F0CE9D"/>
-    </linearGradient>
-  </defs>
   <rect width="64" height="64" rx="18" fill="#07315F"/>
-  <path d="M18 47.5 31.7 15.8c.7-1.7 3.1-1.7 3.8 0l13.7 31.7" stroke="url(#astro-a)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M25.7 35.5h17.8" stroke="#EB4E4D" stroke-width="6.5" stroke-linecap="round"/>
-  <path d="M16.5 39.5c9.7 8.5 23.1 9.7 34.4 2.2" stroke="#F0CE9D" stroke-width="3.8" stroke-linecap="round"/>
-  <circle cx="49.5" cy="40.8" r="3.6" fill="#EB4E4D"/>
+  <circle cx="29" cy="34" r="13" stroke="#F0CE9D" stroke-width="7"/>
+  <path d="M43 21v26" stroke="#EB4E4D" stroke-width="7" stroke-linecap="round"/>
+  <path d="M24 47c6.6 4.2 15 4 21.4-.6" stroke="#00A8AE" stroke-width="5" stroke-linecap="round"/>
 </svg>
