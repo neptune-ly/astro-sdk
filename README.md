@@ -1,4 +1,10 @@
+<div align="center">
+
+<img src="./docs/neptune-logo.png" alt="Neptune. Financial Technology And Solutions" width="520">
+
 # Astro SDK
+
+</div>
 
 Official SDKs for the **Astro** OpenWave payment gateway by Neptune Fintech.
 
