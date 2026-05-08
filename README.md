@@ -2,7 +2,7 @@
 
 Official SDKs for the **Astro** OpenWave payment gateway by Neptune Fintech.
 
-**Docs:** https://Tellesy.github.io/astro-sdk/
+**Docs:** https://neptune.github.io/astro-sdk/
 
 ---
 
@@ -29,14 +29,14 @@ npm install @neptune-astro/sdk
 dependencies:
   astro_sdk:
     git:
-      url: https://github.com/Tellesy/astro-sdk.git
+      url: https://github.com/neptune/astro-sdk.git
       path: sdks/flutter
 ```
 
 ### Swift (SPM)
 ```swift
 // Package.swift
-.package(url: "https://github.com/Tellesy/astro-sdk.git", from: "1.0.0")
+.package(url: "https://github.com/neptune/astro-sdk.git", from: "1.0.0")
 ```
 
 ### Kotlin (Gradle)
@@ -48,7 +48,7 @@ dependencies {
 
 ## OpenWave Standard
 
-Built on the [OpenWave](https://Tellesy.github.io/openwave-spec/) open payment standard.
+Built on the [OpenWave](https://neptune.github.io/openwave-spec/) open payment standard.
 
 ## License
 
