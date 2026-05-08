@@ -1,10 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="390" height="210" viewBox="42 24 390 210" fill="none">
-  <rect x="56" y="34" width="132" height="132" rx="36" fill="#07315F"/>
-  <path d="M122 66l15 35 38 2-29 25 9 37-33-20-33 20 9-37-29-25 38-2 15-35z" fill="#EB4E4D"/>
-  <circle cx="122" cy="115" r="13" fill="#F0CE9D"/>
-  <path d="M91 154c21-16 42-16 62 0" stroke="#00A8AE" stroke-width="8" stroke-linecap="round"/>
-  <text x="220" y="92" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="48" font-weight="840" letter-spacing="-.05em">Astro</text>
-  <text x="220" y="130" fill="#5F6B7A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="650">Gateway SDKs</text>
-  <text x="220" y="205" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="42" font-weight="860" letter-spacing="-.055em">Neptune</text>
-  <circle cx="397" cy="195" r="5" fill="#EB4E4D"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="430" height="220" viewBox="34 18 430 220" fill="none">
+  <defs>
+    <linearGradient id="astro-hero-a" x1="82" y1="164" x2="150" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3BC1EE"/>
+      <stop offset=".52" stop-color="#00A8AE"/>
+      <stop offset="1" stop-color="#F0CE9D"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="28" y="22" width="156" height="156" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#07315F" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft-shadow)">
+    <rect x="54" y="34" width="132" height="132" rx="34" fill="#07315F"/>
+    <path d="M83 143.5 116.4 65c1.3-3 5.5-3 6.8 0l33.4 78.5" stroke="url(#astro-hero-a)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M101.5 113.5h36.5" stroke="#EB4E4D" stroke-width="10" stroke-linecap="round"/>
+    <path d="M77 126.5c24 19.8 57.2 22.5 84.5 4.7" stroke="#F0CE9D" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="160" cy="130" r="5.8" fill="#EB4E4D"/>
+  </g>
+  <text x="220" y="90" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="50" font-weight="840" letter-spacing="-.045em">Astro</text>
+  <text x="220" y="126" fill="#5F6B7A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="650">OpenWave gateway SDKs</text>
+  <text x="220" y="204" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="42" font-weight="860" letter-spacing="-.055em">Neptune</text>
+  <circle cx="397" cy="194" r="5" fill="#EB4E4D"/>
 </svg>
