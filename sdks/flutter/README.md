@@ -69,6 +69,15 @@ if (uri.path == '/result') {
 }
 ```
 
+## Presented Payments
+
+Flutter is suitable for bank apps, wallet apps, and merchant apps that need to render QR, start NFC handoff, or resume the flow after a presentment claim.
+
+- For gateway-mediated presentments, create the presentment on your backend and open the returned secure authorization URL or sheet.
+- For direct bank or wallet presentments, keep the same OpenWave consent and SCA model inside your controlled app surface.
+
+Do not collect OTP or approval secrets in custom merchant widgets.
+
 ## Webhook Verification (Dart server / edge function)
 
 ```dart

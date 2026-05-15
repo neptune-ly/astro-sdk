@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check public surface
+        run: bash ./scripts/check-public-surface.sh
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true

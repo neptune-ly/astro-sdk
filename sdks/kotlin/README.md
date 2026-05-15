@@ -54,6 +54,16 @@ astro.close()
 | `WebhookVerifier` | HMAC-SHA256 signature verification |
 | `WebhookReceiver` | Event-based webhook dispatcher |
 
+## Presented Payments
+
+The Kotlin SDK is appropriate for:
+
+- backend presentment creation and status polling
+- Android bank-app or wallet-app flows that resume after QR or NFC claim
+- direct operator implementations that still need to preserve OpenWave authorization boundaries
+
+Presented payments remain a channel layer. After claim, reuse the standard payment or mandate lifecycle rather than inventing a separate authorization path.
+
 ## Webhook Handler (Ktor server)
 
 ```kotlin

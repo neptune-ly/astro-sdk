@@ -45,6 +45,16 @@ console.log(session.checkout_url) // redirect customer here
 | `identity` | Registry-backed alias resolution and bank-vouched claims | Backend or bank integration |
 | `webhooks` | Signature verification and event dispatch | Backend webhook endpoint |
 
+## Presented Payments
+
+Use the JavaScript SDK to create presentment intents from your trusted backend and hand them to web or mobile surfaces:
+
+- merchant-presented QR for one-time checkout
+- merchant-presented QR or NFC for mandate approval
+- customer-presented wallet token claim in merchant flows
+
+The backend creates or reads the presentment. The customer still completes authorization in the hosted checkout, secure SDK sheet, or bank-controlled app surface. Do not collect OTPs or bank credentials in merchant-owned UI.
+
 ### `astro.payments`
 
 ```ts

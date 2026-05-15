@@ -49,6 +49,16 @@ await UIApplication.shared.open(url)
 | `astro.identity` | `IdentityClient` | Resolve alias, list banks |
 | `astro.webhookVerifier(secret:)` | `WebhookVerifier` | HMAC-SHA256 verification |
 
+## Presented Payments
+
+The Swift SDK supports the iOS side of presented payments:
+
+- render or consume merchant-presented QR
+- trigger NFC handoff where the operator enables it
+- continue mandate approval or one-time payment after a presentment claim
+
+Whether the flow is gateway-mediated or direct-bank or wallet-controlled, the customer must still authorize inside the trusted secure surface.
+
 ## Payment Result Handling (Deep Link)
 
 ```swift

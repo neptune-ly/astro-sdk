@@ -6,7 +6,7 @@
 
 </div>
 
-Official SDKs for the **Astro** OpenWave payment gateway by Neptune Fintech.
+Official SDKs for **Neptune. Astro**, the OpenWave gateway implementation by Neptune Fintech.
 
 **Docs:** https://neptune-ly.github.io/astro-sdk/
 
@@ -55,6 +55,19 @@ dependencies {
 ## OpenWave Standard
 
 Built on the [OpenWave](https://neptune-ly.github.io/openwave-spec/) open payment standard.
+
+## Presented Payments
+
+The SDK surface now includes the implementation rules for OpenWave **presented payments**:
+
+- merchant-presented QR
+- merchant-presented NFC
+- customer-presented wallet or bank-app tokens
+- presented recurring mandate approval
+
+These SDKs do not move OTP, PIN, or push approval into merchant UI. Scan or tap only starts the flow. Final customer authorization still happens in the hosted or secure SDK surface defined by OpenWave.
+
+Banks and wallets can also implement the same presented-payment channel directly when their operator enables it. The SDK guides below describe both the gateway-mediated and direct-operator models.
 
 ## License
 

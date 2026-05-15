@@ -89,6 +89,12 @@ Your page                  Widget                    Astro Gateway
 - All gateway communication is HTTPS
 - Use your backend webhook as the source of truth for order fulfilment
 
+## Presented Payments
+
+The web drop-in is also the correct authorization surface after a QR or NFC presentment is claimed. Your merchant page may display a QR code or expose an NFC handoff, but once the customer claims that presentment the secure widget or hosted checkout owns the SCA step.
+
+For recurring subscriptions, presentment may start the mandate approval flow, but the customer still sees the full mandate scope, amount rules, and frequency before approving with bank OTP or push.
+
 ## License
 
 UNLICENSED — Copyright © Neptune Fintech
