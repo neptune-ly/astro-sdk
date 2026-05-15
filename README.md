@@ -56,6 +56,19 @@ dependencies {
 
 Built on the [OpenWave](https://neptune-ly.github.io/openwave-spec/) open payment standard.
 
+## Credit & Finance
+
+The SDK documentation now covers OpenWave **Credit & Finance** targets:
+
+- credit-assessment consent scopes
+- BNPL installment offers
+- revolving-credit drawdown handoff
+- Murabaha installment disclosures
+- hosted offer acceptance
+- finance contract and repayment webhook events
+
+Finance assessment and offer creation are server-side operations. Browser and mobile SDKs should only open hosted acceptance URLs returned by trusted backends.
+
 ## Presented Payments
 
 The SDK surface now includes the implementation rules for OpenWave **presented payments**:
