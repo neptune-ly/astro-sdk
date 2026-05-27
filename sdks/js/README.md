@@ -4,7 +4,7 @@ Official JavaScript / TypeScript SDK for Astro, Neptune's OpenWave-compliant gat
 
 Works in **Node.js**, **Deno**, and the **browser** (uses native `fetch` + `crypto.subtle`).
 
-Use this SDK from trusted server-side code for payment sessions, subscription mandates, Open Banking token exchange, identity administration, and webhook verification.
+Use this SDK from trusted server-side code for payment sessions, presented payments, subscription mandates, Open Banking token exchange, identity administration, and webhook verification.
 
 ## Install
 
@@ -40,6 +40,7 @@ console.log(session.checkout_url) // redirect customer here
 | Module | Use it for | Runs where |
 |---|---|---|
 | `payments` | Checkout sessions, status, cancellation, recurring mandates | Backend |
+| `presentments` | QR/NFC presentment lifecycle and secure claim handoff | Backend |
 | `alias` | NPT alias lookup and linked account visibility | Backend or trusted internal tools |
 | `openBanking` | Consent creation, PKCE token exchange, accounts/balances/transactions | Backend |
 | `identity` | Registry-backed alias resolution and bank-vouched claims | Backend or bank integration |
@@ -54,6 +55,22 @@ Use the JavaScript SDK to create presentment intents from your trusted backend a
 - customer-presented wallet token claim in merchant flows
 
 The backend creates or reads the presentment. The customer still completes authorization in the hosted checkout, secure SDK sheet, or bank-controlled app surface. Do not collect OTPs or bank credentials in merchant-owned UI.
+
+```ts
+const presentment = await astro.presentments.create({
+  channel: 'QR',
+  mode: 'MERCHANT_PRESENTED',
+  intent: 'ONE_TIME_PAYMENT',
+  amount_mode: 'FIXED',
+  amount: 125_000,
+  currency: 'LYD',
+  description: 'In-store checkout',
+  merchant_reference: 'store-10045',
+})
+
+// Render this as a QR code or NFC URI in your controlled merchant app.
+console.log(presentment.presentment_payload.uri)
+```
 
 ### `astro.payments`
 

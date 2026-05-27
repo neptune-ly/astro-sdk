@@ -38,6 +38,7 @@ __export(index_exports, {
   IdentityClient: () => IdentityClient,
   OpenBankingClient: () => OpenBankingClient,
   PaymentsClient: () => PaymentsClient,
+  PresentmentsClient: () => PresentmentsClient,
   WebhookReceiver: () => WebhookReceiver,
   createCheckoutClient: () => createCheckoutClient,
   createClient: () => createClient,
@@ -320,6 +321,34 @@ var IdentityClient = class {
   }
 };
 
+// src/presentments/index.ts
+var PresentmentsClient = class {
+  constructor(http) {
+    this.http = http;
+  }
+  async capabilities() {
+    return this.http.get("/capabilities");
+  }
+  async create(params) {
+    return this.http.post("/presentments", params);
+  }
+  async list() {
+    return this.http.get("/presentments");
+  }
+  async get(presentmentId) {
+    return this.http.get(`/presentments/${presentmentId}`);
+  }
+  async claim(presentmentId, params) {
+    return this.http.post(`/presentments/${presentmentId}/claim`, params);
+  }
+  async cancel(presentmentId) {
+    return this.http.post(`/presentments/${presentmentId}/cancel`);
+  }
+  async status(presentmentId) {
+    return this.http.get(`/presentments/${presentmentId}/status`);
+  }
+};
+
 // src/webhooks/index.ts
 async function hmacSha256(secret, data) {
   if (typeof crypto !== "undefined" && crypto.subtle) {
@@ -376,6 +405,7 @@ var AstroClient = class {
     this.alias = new AliasClient(this.http);
     this.openBanking = new OpenBankingClient(this.http);
     this.identity = new IdentityClient(this.http);
+    this.presentments = new PresentmentsClient(this.http);
   }
 };
 function createClient(config) {
@@ -396,6 +426,7 @@ function createCheckoutClient(opts) {
   IdentityClient,
   OpenBankingClient,
   PaymentsClient,
+  PresentmentsClient,
   WebhookReceiver,
   createCheckoutClient,
   createClient,

@@ -24,7 +24,7 @@ interface AstroError {
     detail?: string;
     request_id?: string;
 }
-type WebhookEvent = 'payment.completed' | 'payment.settlement_pending' | 'payment.failed' | 'payment.expired' | 'mandate.activated' | 'mandate.cancelled' | 'mandate.charge.completed' | 'mandate.charge.failed' | 'consent.granted' | 'consent.revoked' | 'consent.expired' | 'payment_order.completed' | 'payment_order.failed' | 'payment_order.pending_sca' | 'payment_order.rejected';
+type WebhookEvent = 'payment.completed' | 'payment.settlement_pending' | 'payment.failed' | 'payment.expired' | 'mandate.activated' | 'mandate.cancelled' | 'mandate.charge.completed' | 'mandate.charge.failed' | 'consent.granted' | 'consent.revoked' | 'consent.expired' | 'payment_order.completed' | 'payment_order.failed' | 'payment_order.pending_sca' | 'payment_order.rejected' | 'presentment.created' | 'presentment.claimed' | 'presentment.expired' | 'presentment.cancelled' | 'credit_assessment.completed' | 'finance_offer.created' | 'finance_offer.accepted' | 'finance_contract.active' | 'finance_contract.failed';
 interface WebhookPayload<T = unknown> {
     event: WebhookEvent;
     api_version: string;
@@ -417,6 +417,99 @@ declare class IdentityClient {
     getRegistryInfo(): Promise<RegistryInfo>;
 }
 
+type PresentmentChannel = 'QR' | 'NFC';
+type PresentmentMode = 'MERCHANT_PRESENTED' | 'CUSTOMER_PRESENTED';
+type PresentmentIntent = 'ONE_TIME_PAYMENT' | 'MANDATE_APPROVAL';
+type PresentmentAmountMode = 'FIXED' | 'OPEN';
+type PresentmentStatus = 'CREATED' | 'CLAIMED' | 'PAYMENT_SESSION_CREATED' | 'MANDATE_SESSION_CREATED' | 'CANCELLED' | 'EXPIRED';
+interface PresentedPaymentCapabilities {
+    operator_id: string;
+    deployment_role: 'GATEWAY' | 'BANK' | 'WALLET' | string;
+    presented_payments: {
+        supported_channels: PresentmentChannel[];
+        supported_modes: PresentmentMode[];
+        supported_intents: PresentmentIntent[];
+        enabled: Record<string, boolean>;
+        hosted_auth_required: boolean;
+        notes: string[];
+    };
+}
+interface CreatePresentmentParams {
+    channel: PresentmentChannel;
+    mode: PresentmentMode;
+    intent: PresentmentIntent;
+    amount_mode: PresentmentAmountMode;
+    amount?: number;
+    currency: Currency;
+    description: string;
+    merchant_reference?: string;
+    payer_alias?: string;
+    payer_iban?: string;
+    supported_auth_methods?: Array<'OTP' | 'PUSH'>;
+    expires_in_seconds?: number;
+    metadata?: Record<string, unknown>;
+}
+interface ClaimPresentmentParams {
+    claim_token?: string;
+    payer_alias?: string;
+    payer_iban?: string;
+    amount?: number;
+    redirect_url?: string;
+    cancel_url?: string;
+}
+interface PresentmentPayload {
+    type: 'OPENWAVE_QR_URI' | 'OPENWAVE_NFC_URI' | string;
+    uri: string;
+    qr_payload?: string;
+    nfc_payload?: string;
+    claim_token?: string;
+}
+interface Presentment {
+    presentment_id: string;
+    status: PresentmentStatus;
+    channel: PresentmentChannel;
+    mode: PresentmentMode;
+    intent: PresentmentIntent;
+    amount_mode: PresentmentAmountMode;
+    amount?: number;
+    currency: Currency;
+    description: string;
+    merchant_reference?: string;
+    presentment_payload: PresentmentPayload;
+    payment_session_id?: string;
+    payment_url?: string;
+    mandate_id?: string;
+    supported_auth_methods: string[];
+    metadata?: unknown;
+    claimed_at?: string;
+    cancelled_at?: string;
+    expires_at: string;
+    created_at: string;
+    updated_at: string;
+}
+interface PresentmentStatusResponse {
+    presentment_id: string;
+    status: PresentmentStatus;
+    payment_session_id?: string;
+    payment_url?: string;
+    mandate_id?: string;
+    expires_at: string;
+    updated_at: string;
+}
+declare class PresentmentsClient {
+    private http;
+    constructor(http: HttpClient);
+    capabilities(): Promise<PresentedPaymentCapabilities>;
+    create(params: CreatePresentmentParams): Promise<Presentment>;
+    list(): Promise<{
+        presentments: Presentment[];
+    }>;
+    get(presentmentId: string): Promise<Presentment>;
+    claim(presentmentId: string, params: ClaimPresentmentParams): Promise<Presentment>;
+    cancel(presentmentId: string): Promise<Presentment>;
+    status(presentmentId: string): Promise<PresentmentStatusResponse>;
+}
+
 type WebhookHandler<T = unknown> = (payload: WebhookPayload<T>) => void | Promise<void>;
 declare function verifyWebhookSignature(rawBody: string, signature: string, secret: string): Promise<boolean>;
 declare function parseWebhookPayload<T = unknown>(rawBody: string): WebhookPayload<T>;
@@ -435,6 +528,7 @@ declare class AstroClient {
     readonly alias: AliasClient;
     readonly openBanking: OpenBankingClient;
     readonly identity: IdentityClient;
+    readonly presentments: PresentmentsClient;
     readonly http: HttpClient;
     constructor(config: AstroConfig);
 }
@@ -454,4 +548,4 @@ declare function createCheckoutClient(opts: {
     timeout?: number;
 }): CheckoutClient;
 
-export { type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, CheckoutClient, type ClaimHandleParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreateSessionParams, type Currency, type Destination, type FeePreview, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type RegistryInfo, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };
+export { type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, CheckoutClient, type ClaimHandleParams, type ClaimPresentmentParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreatePresentmentParams, type CreateSessionParams, type Currency, type Destination, type FeePreview, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type PresentedPaymentCapabilities, type Presentment, type PresentmentAmountMode, type PresentmentChannel, type PresentmentIntent, type PresentmentMode, type PresentmentPayload, type PresentmentStatus, type PresentmentStatusResponse, PresentmentsClient, type RegistryInfo, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };
