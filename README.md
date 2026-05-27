@@ -16,7 +16,7 @@ Official SDKs for **Neptune. Astro**, the OpenWave gateway implementation by Nep
 
 | SDK | Language | Install |
 |---|---|---|
-| [`sdks/js`](./sdks/js) | TypeScript / Node.js 18+ | `npm install @neptune-astro/sdk` |
+| [`sdks/js`](./sdks/js) | TypeScript / Node.js 18+ | `npm install @neptune.fintech/astro-sdk` |
 | [`sdks/react`](./sdks/react) | React 18+ | `npm install @neptune-astro/react` |
 | [`sdks/web`](./sdks/web) | Browser drop-in | `<script src="astro.js">` |
 | [`sdks/flutter`](./sdks/flutter) | Flutter / Dart 3+ | pub.dev / git |
@@ -27,7 +27,7 @@ Official SDKs for **Neptune. Astro**, the OpenWave gateway implementation by Nep
 
 ### TypeScript / Node.js
 ```bash
-npm install @neptune-astro/sdk
+npm install @neptune.fintech/astro-sdk
 ```
 
 ### Flutter

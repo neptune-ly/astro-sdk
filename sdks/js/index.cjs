@@ -34,6 +34,7 @@ __export(index_exports, {
   AstroClient: () => AstroClient,
   AstroRequestError: () => AstroRequestError,
   CheckoutClient: () => CheckoutClient,
+  FinanceClient: () => FinanceClient,
   HttpClient: () => HttpClient,
   IdentityClient: () => IdentityClient,
   OpenBankingClient: () => OpenBankingClient,
@@ -349,6 +350,74 @@ var PresentmentsClient = class {
   }
 };
 
+// src/finance/index.ts
+var FinanceAssessmentsClient = class {
+  constructor(http) {
+    this.http = http;
+  }
+  async create(params) {
+    return this.http.post("/credit/assessments", params);
+  }
+  async list() {
+    return this.http.get("/credit/assessments");
+  }
+  async get(assessmentId) {
+    return this.http.get(`/credit/assessments/${assessmentId}`);
+  }
+  async refresh(assessmentId, params = {}) {
+    return this.http.post(`/credit/assessments/${assessmentId}/refresh`, params);
+  }
+  async revoke(assessmentId) {
+    return this.http.delete(`/credit/assessments/${assessmentId}`);
+  }
+};
+var FinanceOffersClient = class {
+  constructor(http) {
+    this.http = http;
+  }
+  async create(params) {
+    return this.http.post("/finance/offers", params);
+  }
+  async list() {
+    return this.http.get("/finance/offers");
+  }
+  async get(offerId) {
+    return this.http.get(`/finance/offers/${offerId}`);
+  }
+  async accept(offerId, financeSessionToken, params = {}) {
+    return this.http.post(
+      `/finance/offers/${offerId}/accept`,
+      params,
+      { "X-OpenWave-Finance-Session": financeSessionToken }
+    );
+  }
+};
+var FinanceContractsClient = class {
+  constructor(http) {
+    this.http = http;
+  }
+  async get(contractId) {
+    return this.http.get(`/finance/contracts/${contractId}`);
+  }
+  async repaymentSchedule(contractId) {
+    return this.http.get(`/finance/contracts/${contractId}/repayment-schedule`);
+  }
+  async cancel(contractId) {
+    return this.http.post(`/finance/contracts/${contractId}/cancel`);
+  }
+};
+var FinanceClient = class {
+  constructor(http) {
+    this.http = http;
+    this.assessments = new FinanceAssessmentsClient(http);
+    this.offers = new FinanceOffersClient(http);
+    this.contracts = new FinanceContractsClient(http);
+  }
+  async capabilities() {
+    return this.http.get("/finance/capabilities");
+  }
+};
+
 // src/webhooks/index.ts
 async function hmacSha256(secret, data) {
   if (typeof crypto !== "undefined" && crypto.subtle) {
@@ -406,6 +475,7 @@ var AstroClient = class {
     this.openBanking = new OpenBankingClient(this.http);
     this.identity = new IdentityClient(this.http);
     this.presentments = new PresentmentsClient(this.http);
+    this.finance = new FinanceClient(this.http);
   }
 };
 function createClient(config) {
@@ -422,6 +492,7 @@ function createCheckoutClient(opts) {
   AstroClient,
   AstroRequestError,
   CheckoutClient,
+  FinanceClient,
   HttpClient,
   IdentityClient,
   OpenBankingClient,

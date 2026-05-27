@@ -510,6 +510,181 @@ declare class PresentmentsClient {
     status(presentmentId: string): Promise<PresentmentStatusResponse>;
 }
 
+type CreditAssessmentPurpose = 'BNPL' | 'REVOLVING_CREDIT' | 'MURABAHA_INSTALLMENT';
+type CreditAssessmentStatus = 'PENDING' | 'COMPLETED' | 'DECLINED' | 'EXPIRED' | 'REVOKED';
+type FinanceProductType = 'BNPL_INSTALLMENT' | 'REVOLVING_CREDIT_DRAW' | 'MURABAHA_INSTALLMENT';
+type FinanceOfferStatus = 'CREATED' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+type FinanceContractStatus = 'PENDING_ACTIVATION' | 'ACTIVE' | 'CANCELLED' | 'FAILED';
+interface Tenor {
+    unit: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR' | string;
+    value: number;
+}
+interface DataWindow {
+    from?: string;
+    to?: string;
+}
+interface RepaymentInstallment {
+    installmentNumber: number;
+    dueDate: string;
+    amount: number;
+    currency: Currency;
+}
+interface RepaymentInstallmentStatus extends RepaymentInstallment {
+    status: string;
+    paidAt?: string;
+}
+interface MurabahaTerms {
+    assetDescription: string;
+    cashPrice: number;
+    profitAmount: number;
+    totalSalePrice: number;
+    downPayment?: number;
+    shariaProfileReference?: string;
+    contractDisclosureUrl?: string;
+}
+interface FinanceCapabilities {
+    supportedProducts: FinanceProductType[];
+    requiredScopes: string[];
+    repaymentMechanisms: string[];
+    hostedAcceptanceRequired: boolean;
+    decisionProvider: string;
+    notes: string[];
+}
+interface CreateCreditAssessmentParams {
+    consentId: string;
+    purpose: CreditAssessmentPurpose;
+    requestedAmount: number;
+    currency: Currency;
+    tenor: Tenor;
+    dataWindow?: DataWindow;
+    selectedAccountIds: string[];
+    metadata?: Record<string, unknown>;
+}
+interface RefreshCreditAssessmentParams {
+    dataWindow?: DataWindow;
+    selectedAccountIds?: string[];
+}
+interface CreditAssessment {
+    assessmentId: string;
+    status: CreditAssessmentStatus;
+    purpose: CreditAssessmentPurpose;
+    consentId: string;
+    bankHandle: string;
+    customerAlias?: string;
+    requestedAmount: number;
+    currency: Currency;
+    tenor: Tenor;
+    dataWindow?: DataWindow;
+    selectedAccountIds: string[];
+    incomeSummary?: unknown;
+    recurringObligations?: unknown;
+    spendingCategories?: unknown;
+    debtServiceIndicators?: unknown;
+    affordability?: unknown;
+    riskScore?: unknown;
+    reasonCodes?: unknown;
+    modelMetadata?: unknown;
+    correlationId: string;
+    expiresAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateFinanceOfferParams {
+    assessmentId: string;
+    productType: FinanceProductType;
+    amount: number;
+    currency: Currency;
+    tenor: Tenor;
+    financeCost?: number;
+    repaymentSchedulePreview?: RepaymentInstallment[];
+    disclosureUrl?: string;
+    merchantReference?: string;
+    financierPayerAlias?: string;
+    financierPayerIban?: string;
+    paymentRedirectUrl?: string;
+    paymentCancelUrl?: string;
+    murabahaTerms?: MurabahaTerms;
+    metadata?: Record<string, unknown>;
+}
+interface AcceptFinanceOfferParams {
+    customerAcceptedDisclosure?: boolean;
+    repaymentMandateId?: string;
+}
+interface FinanceOffer {
+    offerId: string;
+    assessmentId: string;
+    productType: FinanceProductType;
+    status: FinanceOfferStatus;
+    amount: number;
+    currency: Currency;
+    tenor: Tenor;
+    financeCost: number;
+    repaymentSchedulePreview: unknown;
+    disclosureUrl?: string;
+    acceptUrl?: string;
+    acceptanceSessionToken?: string;
+    merchantReference?: string;
+    financierPayerAlias?: string;
+    financierPayerIbanMasked?: string;
+    murabahaTerms?: unknown;
+    acceptedAt?: string;
+    expiresAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+interface FinanceContract {
+    contractId: string;
+    offerId: string;
+    productType: FinanceProductType;
+    status: FinanceContractStatus;
+    amount: number;
+    currency: Currency;
+    paymentSessionId?: string;
+    paymentUrl?: string;
+    repaymentMandateId?: string;
+    activatedAt?: string;
+    cancelledAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+interface RepaymentSchedule {
+    contractId: string;
+    installments: RepaymentInstallmentStatus[];
+    total: number;
+}
+declare class FinanceAssessmentsClient {
+    private http;
+    constructor(http: HttpClient);
+    create(params: CreateCreditAssessmentParams): Promise<CreditAssessment>;
+    list(): Promise<CreditAssessment[]>;
+    get(assessmentId: string): Promise<CreditAssessment>;
+    refresh(assessmentId: string, params?: RefreshCreditAssessmentParams): Promise<CreditAssessment>;
+    revoke(assessmentId: string): Promise<void>;
+}
+declare class FinanceOffersClient {
+    private http;
+    constructor(http: HttpClient);
+    create(params: CreateFinanceOfferParams): Promise<FinanceOffer>;
+    list(): Promise<FinanceOffer[]>;
+    get(offerId: string): Promise<FinanceOffer>;
+    accept(offerId: string, financeSessionToken: string, params?: AcceptFinanceOfferParams): Promise<FinanceContract>;
+}
+declare class FinanceContractsClient {
+    private http;
+    constructor(http: HttpClient);
+    get(contractId: string): Promise<FinanceContract>;
+    repaymentSchedule(contractId: string): Promise<RepaymentSchedule>;
+    cancel(contractId: string): Promise<FinanceContract>;
+}
+declare class FinanceClient {
+    private http;
+    readonly assessments: FinanceAssessmentsClient;
+    readonly offers: FinanceOffersClient;
+    readonly contracts: FinanceContractsClient;
+    constructor(http: HttpClient);
+    capabilities(): Promise<FinanceCapabilities>;
+}
+
 type WebhookHandler<T = unknown> = (payload: WebhookPayload<T>) => void | Promise<void>;
 declare function verifyWebhookSignature(rawBody: string, signature: string, secret: string): Promise<boolean>;
 declare function parseWebhookPayload<T = unknown>(rawBody: string): WebhookPayload<T>;
@@ -529,6 +704,7 @@ declare class AstroClient {
     readonly openBanking: OpenBankingClient;
     readonly identity: IdentityClient;
     readonly presentments: PresentmentsClient;
+    readonly finance: FinanceClient;
     readonly http: HttpClient;
     constructor(config: AstroConfig);
 }
@@ -548,4 +724,4 @@ declare function createCheckoutClient(opts: {
     timeout?: number;
 }): CheckoutClient;
 
-export { type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, CheckoutClient, type ClaimHandleParams, type ClaimPresentmentParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreatePresentmentParams, type CreateSessionParams, type Currency, type Destination, type FeePreview, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type PresentedPaymentCapabilities, type Presentment, type PresentmentAmountMode, type PresentmentChannel, type PresentmentIntent, type PresentmentMode, type PresentmentPayload, type PresentmentStatus, type PresentmentStatusResponse, PresentmentsClient, type RegistryInfo, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };
+export { type AcceptFinanceOfferParams, type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, CheckoutClient, type ClaimHandleParams, type ClaimPresentmentParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateCreditAssessmentParams, type CreateFinanceOfferParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreatePresentmentParams, type CreateSessionParams, type CreditAssessment, type CreditAssessmentPurpose, type CreditAssessmentStatus, type Currency, type DataWindow, type Destination, type FeePreview, FinanceAssessmentsClient, type FinanceCapabilities, FinanceClient, type FinanceContract, type FinanceContractStatus, FinanceContractsClient, type FinanceOffer, type FinanceOfferStatus, FinanceOffersClient, type FinanceProductType, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type MurabahaTerms, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type PresentedPaymentCapabilities, type Presentment, type PresentmentAmountMode, type PresentmentChannel, type PresentmentIntent, type PresentmentMode, type PresentmentPayload, type PresentmentStatus, type PresentmentStatusResponse, PresentmentsClient, type RefreshCreditAssessmentParams, type RegistryInfo, type RepaymentInstallment, type RepaymentInstallmentStatus, type RepaymentSchedule, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type Tenor, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };

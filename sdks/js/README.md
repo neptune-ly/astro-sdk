@@ -4,7 +4,7 @@ Official JavaScript / TypeScript SDK for Astro, Neptune's OpenWave-compliant gat
 
 Works in **Node.js**, **Deno**, and the **browser** (uses native `fetch` + `crypto.subtle`).
 
-Use this SDK from trusted server-side code for payment sessions, presented payments, subscription mandates, Open Banking token exchange, identity administration, and webhook verification.
+Use this SDK from trusted server-side code for payment sessions, presented payments, subscription mandates, Open Banking token exchange, Credit & Finance orchestration, identity administration, and webhook verification.
 
 ## Install
 
@@ -43,6 +43,7 @@ console.log(session.checkout_url) // redirect customer here
 | `presentments` | QR/NFC presentment lifecycle and secure claim handoff | Backend |
 | `alias` | NPT alias lookup and linked account visibility | Backend or trusted internal tools |
 | `openBanking` | Consent creation, PKCE token exchange, accounts/balances/transactions | Backend |
+| `finance` | Credit assessment, finance offers, hosted offer acceptance, contracts, repayments | Backend target |
 | `identity` | Registry-backed alias resolution and bank-vouched claims | Backend or bank integration |
 | `webhooks` | Signature verification and event dispatch | Backend webhook endpoint |
 
@@ -70,6 +71,52 @@ const presentment = await astro.presentments.create({
 
 // Render this as a QR code or NFC URI in your controlled merchant app.
 console.log(presentment.presentment_payload.uri)
+```
+
+## Credit & Finance target
+
+When enabled by the Astro deployment, Credit & Finance remains server-side. Your backend requests finance-specific consent, creates assessments and offers, and sends the customer only to the hosted acceptance URL.
+
+```ts
+const assessment = await astro.finance.assessments.create({
+  consentId,
+  purpose: 'BNPL',
+  requestedAmount: 860_000,
+  currency: 'LYD',
+  tenor: { unit: 'MONTH', value: 6 },
+  dataWindow: { from: '2025-11-01', to: '2026-05-01' },
+  selectedAccountIds: ['acc_01JCR5YSS1QYZYKJ6W9AC4S5C8'],
+})
+
+const offer = await astro.finance.offers.create({
+  assessmentId: assessment.assessmentId,
+  productType: 'BNPL_INSTALLMENT',
+  amount: 860_000,
+  currency: 'LYD',
+  tenor: { unit: 'MONTH', value: 6 },
+  financeCost: 0,
+  disclosureUrl: 'https://merchant.example/finance/disclosures/order-1042',
+  merchantReference: 'order_1042',
+})
+
+// Send the customer to the hosted acceptance page. Do not collect finance
+// acceptance, bank credentials, OTP, or raw account data inside merchant UI.
+console.log(offer.acceptUrl)
+```
+
+### `astro.finance`
+
+```ts
+const caps = await astro.finance.capabilities()
+const assessments = await astro.finance.assessments.list()
+const refreshed = await astro.finance.assessments.refresh(assessment.assessmentId)
+const createdOffer = await astro.finance.offers.create({ ... })
+const contract = await astro.finance.offers.accept(
+  createdOffer.offerId,
+  createdOffer.acceptanceSessionToken!,
+  { customerAcceptedDisclosure: true }
+)
+const schedule = await astro.finance.contracts.repaymentSchedule(contract.contractId)
 ```
 
 ### `astro.payments`
