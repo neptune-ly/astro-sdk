@@ -43,7 +43,7 @@ await UIApplication.shared.open(url)
 
 | Property | Type | Description |
 |---|---|---|
-| `astro.payments` | `PaymentsClient` | Sessions, mandates |
+| `astro.payments` | `PaymentsClient` | Sessions, refunds, mandates, mandate charges |
 | `astro.alias` | `AliasClient` | Profile, accounts, resolve |
 | `astro.openBanking` | `OpenBankingClient` | Consent, token, accounts, transactions |
 | `astro.identity` | `IdentityClient` | Resolve alias, list banks |
@@ -57,7 +57,75 @@ The Swift SDK supports the iOS side of presented payments:
 - trigger NFC handoff where the operator enables it
 - continue mandate approval or one-time payment after a presentment claim
 
-Whether the flow is gateway-mediated or direct-bank or wallet-controlled, the customer must still authorize inside the trusted secure surface.
+Whether the flow is gateway-mediated or direct-bank or wallet-controlled, the claim response returns `payment_url`, `mandate_consent_url`, or `auth_surface`, and the customer must still authorize inside that trusted secure surface.
+
+For QR scanning, keep the existing domestic QR parser and add OpenWave detection as a branch: parse EMV TLV, search Merchant Account Information templates for `00 = LY.OPENWAVE`, then claim the presentment. If the marker is absent, the app should continue through the normal NUMO/LYPay QR flow. NFC should use an NFC Forum NDEF URI record, preferably an HTTPS universal link handled by the bank or wallet app.
+
+For recurring mandate approval, expect `auth_surface.type = "HOSTED_MANDATE_CONSENT"` or a `mandate_consent_url`.
+
+Merchant apps must not collect OTP, PIN, passcode, push approval, or bank credentials.
+
+```swift
+let presentment = try await astro.presentments.create(
+    CreatePresentmentRequest(
+        channel: "QR",
+        mode: "MERCHANT_PRESENTED",
+        intent: "ONE_TIME_PAYMENT",
+        amountMode: "FIXED",
+        amount: 860_000,
+        currency: "LYD",
+        description: "Neptune Store checkout"
+    ),
+    idempotencyKey: "pos-order-1042"
+)
+
+let claim = try await astro.presentments.claim(
+    presentment.presentmentId,
+    request: ClaimPresentmentRequest(
+        claimToken: presentment.presentmentPayload?.claimToken,
+        payerAlias: "tellesy@andalus"
+    )
+)
+
+if let url = URL(string: claim.authSurface?.url ?? claim.paymentUrl ?? "") {
+    await UIApplication.shared.open(url)
+}
+```
+
+## Refunds and recurring charges
+
+```swift
+let refund = try await astro.payments.createRefund(
+    sessionId: session.sessionId,
+    request: CreateRefundRequest(
+        amount: 20_000,
+        currency: "LYD",
+        merchantReference: "refund-order-1042-item-1",
+        reason: "Customer returned one item"
+    ),
+    idempotencyKey: "refund-order-1042-item-1"
+)
+
+let mandate = try await astro.payments.createMandate(
+    CreateMandateRequest(
+        payerAlias: "tellesy@andalus",
+        amountLimit: 50_000,
+        currency: "LYD",
+        frequency: "MONTHLY",
+        description: "Premium support plan",
+        consentRedirectUrl: "myapp://subscription/return"
+    ),
+    idempotencyKey: "sub-1042"
+)
+
+try await astro.payments.chargeMandate(
+    mandate.mandateId,
+    request: ChargeMandateRequest(amount: 50_000, description: "Premium support monthly charge"),
+    idempotencyKey: "sub-1042-2026-05"
+)
+```
+
+Fulfil orders only after your backend receives a signed `payment.completed` webhook or confirms final server status. App callbacks and `payment.settlement_pending` are not fulfilment proof.
 
 ## Payment Result Handling (Deep Link)
 

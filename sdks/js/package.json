@@ -3,17 +3,17 @@
   "version": "1.0.0",
   "description": "Official JavaScript/TypeScript SDK for OpenWave-compatible payment gateways",
   "type": "module",
-  "main": "./index.cjs",
-  "module": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "import": "./index.js",
-      "require": "./index.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
-  "files": ["index.js", "index.cjs", "index.d.ts", "index.d.cts", "README.md"],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",

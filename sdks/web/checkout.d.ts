@@ -23,6 +23,7 @@ export interface CheckoutBranding {
 }
 export interface CheckoutOptions {
     sessionId: string;
+    sessionToken?: string;
     gatewayUrl?: string;
     locale?: 'en' | 'ar';
     theme?: 'light' | 'dark' | 'auto';

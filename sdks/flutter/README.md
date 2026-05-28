@@ -43,7 +43,7 @@ print('Routes to bank: ${resolved.bankHandle}');
 
 | Client | Methods |
 |---|---|
-| `astro.payments` | `createSession`, `getSession`, `cancelSession`, `listSessions`, `createMandate` |
+| `astro.payments` | `createSession`, `getSession`, `cancelSession`, `listSessions`, `createRefund`, `listRefunds`, `createMandate`, `chargeMandate`, `listMandateCharges` |
 | `astro.alias` | `getProfile`, `getAccounts`, `resolve`, `deactivate` |
 | `astro.openBanking` | `createConsent`, `exchangeCode`, `refreshToken`, `getAccounts`, `getTransactions` |
 | `astro.identity` | `resolve`, `listBanks`, `getBank` |
@@ -73,10 +73,67 @@ if (uri.path == '/result') {
 
 Flutter is suitable for bank apps, wallet apps, and merchant apps that need to render QR, start NFC handoff, or resume the flow after a presentment claim.
 
-- For gateway-mediated presentments, create the presentment on your backend and open the returned secure authorization URL or sheet.
+- For gateway-mediated presentments, create the presentment on your backend and open the returned `payment_url`, `mandate_consent_url`, or `auth_surface`.
 - For direct bank or wallet presentments, keep the same OpenWave consent and SCA model inside your controlled app surface.
+- For QR scanning in Libya, parse normal EMV/NUMO QR first. Route to OpenWave only when a Merchant Account Information template contains `00 = LY.OPENWAVE`; otherwise keep the existing LYPay/NUMO QR path.
 
-Do not collect OTP or approval secrets in custom merchant widgets.
+For recurring mandate approval, expect `auth_surface.type = "HOSTED_MANDATE_CONSENT"` or a `mandate_consent_url`.
+
+Do not collect OTP, PIN, passcode, push approval, bank credentials, or approval secrets in custom merchant widgets.
+
+```dart
+final presentment = await astro.presentments.create({
+  'channel': 'QR',
+  'mode': 'MERCHANT_PRESENTED',
+  'intent': 'ONE_TIME_PAYMENT',
+  'amount_mode': 'FIXED',
+  'amount': 860000,
+  'currency': 'LYD',
+  'description': 'Neptune Store checkout',
+}, idempotencyKey: 'pos-order-1042');
+
+final claim = await astro.presentments.claim(presentment.presentmentId, {
+  'claim_token': presentment.presentmentPayload?.claimToken,
+  'payer_alias': 'tellesy@andalus',
+});
+
+await launchUrl(Uri.parse(claim.authSurface?.url ?? claim.paymentUrl!));
+```
+
+OpenWave QR uses EMV tag `26` by default. Sub-tags are `00 = LY.OPENWAVE`, `01 = presentment_id`, `02 = claim_token`, `03 = QR`, and `04 = P` or `M`. Optional operator metadata uses tag `50` with `00 = LY.OPENWAVE.OP` and `01 = operator_id`. NFC uses an NDEF URI record, preferably an HTTPS universal/app link that resolves to the same claim flow.
+
+## Refunds and recurring charges
+
+```dart
+await astro.payments.createRefund(
+  session.sessionId,
+  const CreateRefundRequest(
+    amount: 20000,
+    currency: 'LYD',
+    merchantReference: 'refund-order-1042-item-1',
+    reason: 'Customer returned one item',
+  ),
+  idempotencyKey: 'refund-order-1042-item-1',
+);
+
+final mandate = await astro.payments.createMandate(
+  payerAlias: 'tellesy@andalus',
+  amountLimit: 50000,
+  currency: 'LYD',
+  frequency: 'MONTHLY',
+  description: 'Premium support plan',
+  consentRedirectUrl: 'myapp://subscription/return',
+);
+
+await astro.payments.chargeMandate(
+  mandateId: mandate.mandateId,
+  amount: 50000,
+  description: 'Premium support monthly charge',
+  idempotencyKey: 'sub-1042-2026-05',
+);
+```
+
+Fulfil orders only from your backend after a signed `payment.completed` webhook or final server status confirms completion. Do not fulfil from a mobile callback or `payment.settlement_pending`.
 
 ## Webhook Verification (Dart server / edge function)
 

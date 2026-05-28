@@ -1,4 +1,4 @@
-const S = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="28" fill="#07315F"/><path d="M28 72c12-25 24-37 36-37 10 0 16 9 24 18 9 10 18 19 34 3" stroke="#F0CE9D" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="64" cy="35" r="5" fill="#EB4E4D"/><circle cx="122" cy="56" r="5" fill="#00A8AE"/><text x="128" y="68" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="42" font-weight="760">OpenWave</text><text x="130" y="91" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="15" font-weight="560">Neptune-built open standard</text></svg>')}`, E = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="30" fill="#07315F"/><path d="M36 76 60 29l24 47M45 59h30" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="84" cy="31" r="6" fill="white" opacity=".9"/><text x="128" y="66" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="45" font-weight="780">Astro</text><text x="130" y="90" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="15" font-weight="560">Neptune OpenWave gateway</text></svg>')}`, L = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="30" fill="#07315F"/><path d="M34 78V40l26 38 26-38v38" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="88" cy="32" r="7" fill="#00A8AE"/><circle cx="32" cy="88" r="7" fill="#EB4E4D"/><text x="128" y="64" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="38" font-weight="780">Neptune</text><text x="130" y="89" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="15" font-weight="560">Financial Technology</text></svg>')}`, M = `
+const $ = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="28" fill="#07315F"/><path d="M28 72c12-25 24-37 36-37 10 0 16 9 24 18 9 10 18 19 34 3" stroke="#F0CE9D" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="64" cy="35" r="5" fill="#EB4E4D"/><circle cx="122" cy="56" r="5" fill="#00A8AE"/><text x="128" y="68" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="42" font-weight="760">OpenWave</text><text x="130" y="91" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="15" font-weight="560">Neptune-built open standard</text></svg>')}`, T = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="30" fill="#07315F"/><path d="M36 76 60 29l24 47M45 59h30" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="84" cy="31" r="6" fill="white" opacity=".9"/><text x="128" y="66" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="45" font-weight="780">Astro</text><text x="130" y="90" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="15" font-weight="560">Neptune OpenWave gateway</text></svg>')}`, L = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="30" fill="#07315F"/><path d="M34 78V40l26 38 26-38v38" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="88" cy="32" r="7" fill="#00A8AE"/><circle cx="32" cy="88" r="7" fill="#EB4E4D"/><text x="128" y="64" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="38" font-weight="780">Neptune</text><text x="130" y="89" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="15" font-weight="560">Financial Technology</text></svg>')}`, M = `
   .ow-overlay {
     position: fixed; inset: 0; z-index: 999999;
     background: rgba(0,0,0,0.34); backdrop-filter: blur(18px) saturate(1.2);
@@ -118,9 +118,9 @@ const S = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="ht
   @keyframes ow-slidein { from { transform: translateY(24px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
   @keyframes ow-spin { to { transform: rotate(360deg) } }
 `;
-class $ {
+class P {
   constructor(e) {
-    this.overlay = null, this.styleEl = null, this.step = "alias", this.aliasValue = "", this.errorMsg = "", this.sessionData = null, this.options = e;
+    this.overlay = null, this.styleEl = null, this.step = "alias", this.aliasValue = "", this.errorMsg = "", this.sessionData = null, this.selectedAuth = "OTP", this.options = e;
   }
   mount() {
     this.injectStyles(), this.render();
@@ -133,40 +133,41 @@ class $ {
     document.getElementById("ow-styles") || (this.styleEl = document.createElement("style"), this.styleEl.id = "ow-styles", this.styleEl.textContent = M, document.head.appendChild(this.styleEl));
   }
   render() {
-    var i, n, a;
-    (i = this.overlay) == null || i.remove();
+    var r, s, a;
+    (r = this.overlay) == null || r.remove();
     const e = this.resolveTheme(), t = document.createElement("div");
-    t.className = "ow-overlay", t.addEventListener("click", (l) => {
-      l.target === t && this.handleDismiss();
+    t.className = "ow-overlay", t.addEventListener("click", (c) => {
+      c.target === t && this.handleDismiss();
     });
-    const s = document.createElement("div");
-    s.className = "ow-modal", s.setAttribute("data-theme", e), s.style.setProperty("--ow-accent", this.safeColor((n = this.options.branding) == null ? void 0 : n.accentColor) ?? "#07315F"), s.innerHTML = this.renderHTML(), t.appendChild(s), document.body.appendChild(t), this.overlay = t, this.bindEvents(s), (a = s.querySelector(".ow-alias-input")) == null || a.focus();
+    const o = document.createElement("div");
+    o.className = "ow-modal", o.setAttribute("data-theme", e), o.style.setProperty("--ow-accent", this.safeColor((s = this.options.branding) == null ? void 0 : s.accentColor) ?? "#07315F"), o.innerHTML = this.renderHTML(), t.appendChild(o), document.body.appendChild(t), this.overlay = t, this.bindEvents(o), (a = o.querySelector(".ow-alias-input")) == null || a.focus();
   }
   renderHTML() {
-    var u, f;
-    const e = this.options.branding ?? {}, t = this.escapeHtml(e.gatewayName ?? "OpenWave"), s = this.escapeHtml(e.merchantName ?? "Merchant checkout"), i = this.escapeHtml(e.acquirerName ?? "Bank-authenticated payment"), n = this.safeUrl(e.gatewayLogoUrl) ?? E, a = this.safeUrl(e.openWaveLogoUrl) ?? S, l = this.safeUrl(e.neptuneLogoUrl) ?? L, d = this.safeUrl(e.merchantLogoUrl), r = this.safeUrl(e.acquirerLogoUrl), c = d ?? n, o = (u = this.sessionData) == null ? void 0 : u.amount, m = ((f = this.sessionData) == null ? void 0 : f.currency) ?? "LYD", b = m === "LYD" ? 1e3 : 100, y = m === "LYD" ? 3 : 2, w = o != null ? `<div class="ow-amount"><span class="ow-amount-value">${(o / b).toFixed(y)}</span><span class="ow-amount-currency">${m}</span></div>` : "", v = `
+    var b, f, y;
+    const e = this.options.branding ?? {}, t = this.escapeHtml(e.gatewayName ?? "OpenWave"), o = this.escapeHtml(e.merchantName ?? "Merchant checkout"), r = this.escapeHtml(e.acquirerName ?? "Bank-authenticated payment"), s = this.safeUrl(e.gatewayLogoUrl) ?? T, a = this.safeUrl(e.openWaveLogoUrl) ?? $, c = this.safeUrl(e.neptuneLogoUrl) ?? L, n = this.safeUrl(e.merchantLogoUrl), i = this.safeUrl(e.acquirerLogoUrl), d = n ?? s, l = (b = this.sessionData) == null ? void 0 : b.amount, u = ((f = this.sessionData) == null ? void 0 : f.currency) ?? "LYD", g = u === "LYD" ? 1e3 : 100, x = u === "LYD" ? 3 : 2, m = l != null ? `<div class="ow-amount"><span class="ow-amount-value">${(l / g).toFixed(x)}</span><span class="ow-amount-currency">${u}</span></div>` : "", k = `
       <div class="ow-header">
         <div class="ow-brand">
-          ${c ? `<img class="ow-logo ow-logo-wide" src="${this.escapeHtml(c)}" alt="" />` : `<div class="ow-logo">${t.slice(0, 2).toUpperCase()}</div>`}
+          ${d ? `<img class="ow-logo ow-logo-wide" src="${this.escapeHtml(d)}" alt="" />` : `<div class="ow-logo">${t.slice(0, 2).toUpperCase()}</div>`}
           <div>
-            <span class="ow-title">${s}</span>
-            <span class="ow-subtitle">${t} payment via ${i}</span>
+            <span class="ow-title">${o}</span>
+            <span class="ow-subtitle">${t} payment via ${r}</span>
           </div>
         </div>
         <button class="ow-close" aria-label="Close">&times;</button>
       </div>
-    `, x = `
+    `, S = `
       <div class="ow-rail">
-        <span class="ow-chip"><img src="${this.escapeHtml(n)}" alt="" /> ${t}</span>
+        <span class="ow-chip"><img src="${this.escapeHtml(s)}" alt="" /> ${t}</span>
         <span class="ow-chip"><img src="${this.escapeHtml(a)}" alt="" /> OpenWave</span>
-        <span class="ow-chip">${r ? `<img src="${this.escapeHtml(r)}" alt="" />` : ""}${i}</span>
+        <span class="ow-chip">${i ? `<img src="${this.escapeHtml(i)}" alt="" />` : ""}${r}</span>
         <span class="ow-chip ow-standard">SCA protected</span>
       </div>
-    `, k = `<div class="ow-footer"><div class="ow-footer-logos"><img src="${this.escapeHtml(l)}" alt="Neptune" /><img src="${this.escapeHtml(a)}" alt="OpenWave" /></div>Secured by <strong>${t}</strong>. The merchant never sees bank credentials.</div>`;
-    let p = "";
-    return this.step === "alias" ? p = `
+    `, E = `<div class="ow-footer"><div class="ow-footer-logos"><img src="${this.escapeHtml(c)}" alt="Neptune" /><img src="${this.escapeHtml(a)}" alt="OpenWave" /></div>Secured by <strong>${t}</strong>. The merchant never sees bank credentials.</div>`;
+    let h = "";
+    if (this.step === "alias")
+      h = `
         <div class="ow-body">
-          ${w}
+          ${m}
           <div class="ow-input-group">
             <div class="ow-label">Pay with</div>
             <input class="ow-input ow-alias-input" type="text" placeholder="your-alias or LY..." value="${this.aliasValue}" autocomplete="off" />
@@ -176,9 +177,11 @@ class $ {
           <button class="ow-btn ow-pay-btn">Continue</button>
           <button class="ow-btn-ghost ow-cancel-btn">Cancel</button>
         </div>
-      ` : this.step === "otp" ? p = `
+      `;
+    else if (this.step === "otp")
+      h = `
         <div class="ow-body">
-          ${w}
+          ${m}
           <div class="ow-input-group">
             <div class="ow-label">One-Time Password</div>
             <input class="ow-input ow-otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" />
@@ -188,76 +191,129 @@ class $ {
           <button class="ow-btn ow-confirm-btn">Confirm Payment</button>
           <button class="ow-btn-ghost ow-back-btn">Change payer</button>
         </div>
-      ` : this.step === "processing" ? p = '<div class="ow-body"><div class="ow-state"><span class="ow-spinner"></span><div class="ow-state-title">Processing payment</div><div class="ow-state-subtitle">Your bank is completing the authorization.</div></div></div>' : this.step === "success" ? p = '<div class="ow-body"><div class="ow-state"><div class="ow-state-mark">OK</div><div class="ow-state-title">Payment successful</div><div class="ow-state-subtitle">The merchant has received the confirmed payment status.</div></div><button class="ow-btn ow-done-btn">Done</button></div>' : this.step === "failed" && (p = `<div class="ow-body"><div class="ow-state"><div class="ow-state-mark fail">!</div><div class="ow-state-title">Payment failed</div><div class="ow-state-subtitle">${this.escapeHtml(this.errorMsg || "The bank could not complete this payment.")}</div></div><button class="ow-btn ow-retry-btn">Try again</button></div>`), v + x + p + k;
+      `;
+    else if (this.step === "auth") {
+      const v = ((y = this.sessionData) == null ? void 0 : y.auth_modes) ?? ["OTP"];
+      h = `
+        <div class="ow-body">
+          ${m}
+          <div class="ow-input-group">
+            <div class="ow-label">Bank authentication</div>
+            <div class="ow-otp-hint">Choose how your bank should verify this payment. The merchant cannot approve it for you.</div>
+          </div>
+          ${this.errorMsg ? `<div class="ow-error">${this.errorMsg}</div>` : ""}
+          ${v.includes("OTP") ? '<button class="ow-btn ow-auth-otp-btn">Send SMS OTP</button>' : ""}
+          ${v.includes("PUSH") ? '<button class="ow-btn ow-auth-push-btn">Send push approval</button>' : ""}
+          <button class="ow-btn-ghost ow-back-btn">Change payer</button>
+        </div>
+      `;
+    } else this.step === "push" ? h = `
+        <div class="ow-body">
+          ${m}
+          <div class="ow-state"><span class="ow-spinner"></span><div class="ow-state-title">Waiting for bank approval</div><div class="ow-state-subtitle">Approve the payment in your banking app. This window will update automatically.</div></div>
+          ${this.errorMsg ? `<div class="ow-error">${this.errorMsg}</div>` : ""}
+          <button class="ow-btn-ghost ow-back-btn">Use another method</button>
+        </div>
+      ` : this.step === "processing" ? h = '<div class="ow-body"><div class="ow-state"><span class="ow-spinner"></span><div class="ow-state-title">Processing payment</div><div class="ow-state-subtitle">Your bank is completing the authorization.</div></div></div>' : this.step === "success" ? h = '<div class="ow-body"><div class="ow-state"><div class="ow-state-mark">OK</div><div class="ow-state-title">Payment successful</div><div class="ow-state-subtitle">The merchant has received the confirmed payment status.</div></div><button class="ow-btn ow-done-btn">Done</button></div>' : this.step === "failed" && (h = `<div class="ow-body"><div class="ow-state"><div class="ow-state-mark fail">!</div><div class="ow-state-title">Payment failed</div><div class="ow-state-subtitle">${this.escapeHtml(this.errorMsg || "The bank could not complete this payment.")}</div></div><button class="ow-btn ow-retry-btn">Try again</button></div>`);
+    return k + S + h + E;
   }
   bindEvents(e) {
-    var t, s, i, n, a, l, d, r, c;
-    (t = e.querySelector(".ow-close")) == null || t.addEventListener("click", () => this.handleDismiss()), (s = e.querySelector(".ow-cancel-btn")) == null || s.addEventListener("click", () => this.handleDismiss()), (i = e.querySelector(".ow-pay-btn")) == null || i.addEventListener("click", () => this.handleAliasContinue(e)), (n = e.querySelector(".ow-alias-input")) == null || n.addEventListener("keydown", (o) => {
-      o.key === "Enter" && this.handleAliasContinue(e);
-    }), (a = e.querySelector(".ow-confirm-btn")) == null || a.addEventListener("click", () => this.handleOtpConfirm(e)), (l = e.querySelector(".ow-otp-input")) == null || l.addEventListener("keydown", (o) => {
-      o.key === "Enter" && this.handleOtpConfirm(e);
+    var t, o, r, s, a, c, n, i, d, l, u;
+    (t = e.querySelector(".ow-close")) == null || t.addEventListener("click", () => this.handleDismiss()), (o = e.querySelector(".ow-cancel-btn")) == null || o.addEventListener("click", () => this.handleDismiss()), (r = e.querySelector(".ow-pay-btn")) == null || r.addEventListener("click", () => this.handleAliasContinue(e)), (s = e.querySelector(".ow-alias-input")) == null || s.addEventListener("keydown", (g) => {
+      g.key === "Enter" && this.handleAliasContinue(e);
+    }), (a = e.querySelector(".ow-confirm-btn")) == null || a.addEventListener("click", () => this.handleOtpConfirm(e)), (c = e.querySelector(".ow-auth-otp-btn")) == null || c.addEventListener("click", () => this.handleAuthSelect("OTP")), (n = e.querySelector(".ow-auth-push-btn")) == null || n.addEventListener("click", () => this.handleAuthSelect("PUSH")), (i = e.querySelector(".ow-otp-input")) == null || i.addEventListener("keydown", (g) => {
+      g.key === "Enter" && this.handleOtpConfirm(e);
     }), (d = e.querySelector(".ow-back-btn")) == null || d.addEventListener("click", () => {
       this.step = "alias", this.errorMsg = "", this.render();
-    }), (r = e.querySelector(".ow-done-btn")) == null || r.addEventListener("click", () => this.destroy()), (c = e.querySelector(".ow-retry-btn")) == null || c.addEventListener("click", () => {
+    }), (l = e.querySelector(".ow-done-btn")) == null || l.addEventListener("click", () => this.destroy()), (u = e.querySelector(".ow-retry-btn")) == null || u.addEventListener("click", () => {
       this.step = "alias", this.errorMsg = "", this.render();
     });
   }
   async handleAliasContinue(e) {
-    var i;
+    var r;
     const t = e.querySelector(".ow-alias-input");
     if (this.aliasValue = (t == null ? void 0 : t.value.trim()) ?? "", !this.aliasValue) {
       this.errorMsg = "Please enter an alias or IBAN", this.render();
       return;
     }
-    const s = e.querySelector(".ow-pay-btn");
-    s.disabled = !0, s.innerHTML = '<span class="ow-spinner"></span>Verifying', this.errorMsg = "";
+    const o = e.querySelector(".ow-pay-btn");
+    o.disabled = !0, o.innerHTML = '<span class="ow-spinner"></span>Verifying', this.errorMsg = "";
     try {
-      const n = this.options.gatewayUrl ?? "", l = this.aliasValue.toUpperCase().startsWith("LY") ? { payer_iban: this.aliasValue } : { payer_alias: this.aliasValue }, d = await fetch(`${n}/payments/sessions/${this.options.sessionId}/resolve-payer`, {
+      const s = this.options.gatewayUrl ?? "", c = this.aliasValue.toUpperCase().startsWith("LY") ? { payer_iban: this.aliasValue } : { payer_alias: this.aliasValue }, n = await fetch(`${s}/session/${this.options.sessionId}/resolve-payer`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(l)
-      }), r = await d.json();
-      if (!d.ok) {
-        this.errorMsg = (r == null ? void 0 : r.message) ?? ((i = r == null ? void 0 : r.error) == null ? void 0 : i.message) ?? "Verification failed", this.render();
+        headers: this.headers(),
+        body: JSON.stringify(c)
+      }), i = await n.json();
+      if (!n.ok) {
+        this.errorMsg = (i == null ? void 0 : i.message) ?? ((r = i == null ? void 0 : i.error) == null ? void 0 : r.message) ?? "Verification failed", this.render();
         return;
       }
-      const c = await fetch(`${n}/payments/sessions/${this.options.sessionId}/select-auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auth_mode: "OTP" })
-      }), o = await c.json().catch(() => ({}));
-      if (!c.ok) {
-        this.errorMsg = (o == null ? void 0 : o.message) ?? (o == null ? void 0 : o.error) ?? "Could not send OTP", this.render();
-        return;
-      }
-      this.sessionData = { ...this.sessionData, ...r }, this.step = "otp", this.render();
+      this.sessionData = { ...this.sessionData, ...i }, this.step = (i.auth_modes ?? ["OTP"]).length > 1 || (i.auth_modes ?? []).includes("PUSH") ? "auth" : "otp", this.render(), this.step === "otp" && await this.handleAuthSelect("OTP");
     } catch {
       this.errorMsg = "Network error. Please try again.", this.render();
     }
   }
+  async handleAuthSelect(e) {
+    var t;
+    this.selectedAuth = e, this.errorMsg = "";
+    try {
+      const o = this.options.gatewayUrl ?? "", r = await fetch(`${o}/session/${this.options.sessionId}/select-auth`, {
+        method: "POST",
+        headers: this.headers(),
+        body: JSON.stringify({ auth_mode: e })
+      }), s = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        this.errorMsg = (s == null ? void 0 : s.message) ?? ((t = s == null ? void 0 : s.error) == null ? void 0 : t.message) ?? `Could not start ${e} authentication`, this.render();
+        return;
+      }
+      this.sessionData = { ...this.sessionData, ...s }, e === "PUSH" ? (this.step = "push", this.render(), this.pollPushStatus()) : (this.step = "otp", this.render());
+    } catch {
+      this.errorMsg = "Network error. Please try again.", this.render();
+    }
+  }
+  async pollPushStatus() {
+    var t, o, r, s;
+    const e = this.options.gatewayUrl ?? "";
+    for (let a = 0; a < 18; a++) {
+      await new Promise((i) => setTimeout(i, a === 0 ? 900 : 1800));
+      const n = await (await fetch(`${e}/session/${this.options.sessionId}/push-status`, {
+        method: "GET",
+        headers: this.headers()
+      })).json().catch(() => ({}));
+      if (n.push_status === "APPROVED" || n.payment_status === "COMPLETED") {
+        this.step = "success", this.render(), (o = (t = this.options).onSuccess) == null || o.call(t, { session_id: this.options.sessionId, status: "COMPLETED" });
+        return;
+      }
+      if (["REJECTED", "EXPIRED"].includes(n.push_status)) {
+        this.step = "failed", this.errorMsg = `Push approval ${String(n.push_status).toLowerCase()}.`, this.render(), (s = (r = this.options).onFailed) == null || s.call(r, { session_id: this.options.sessionId, status: "FAILED", message: this.errorMsg });
+        return;
+      }
+    }
+    this.step = "failed", this.errorMsg = "Push approval timed out.", this.render();
+  }
   async handleOtpConfirm(e) {
-    var s, i, n, a, l, d;
-    const t = ((s = e.querySelector(".ow-otp-input")) == null ? void 0 : s.value.trim()) ?? "";
+    var o, r, s, a, c, n;
+    const t = ((o = e.querySelector(".ow-otp-input")) == null ? void 0 : o.value.trim()) ?? "";
     if (t.length < 4) {
       this.errorMsg = "Please enter a valid OTP", this.render();
       return;
     }
     this.step = "processing", this.render();
     try {
-      const r = this.options.gatewayUrl ?? "", c = await fetch(`${r}/payments/sessions/${this.options.sessionId}/confirm`, {
+      const i = this.options.gatewayUrl ?? "", d = await fetch(`${i}/session/${this.options.sessionId}/confirm-otp`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: this.headers(),
         body: JSON.stringify({ otp_code: t })
-      }), o = await c.json();
-      if (!c.ok) {
-        this.step = "failed", this.errorMsg = (o == null ? void 0 : o.message) ?? ((i = o == null ? void 0 : o.error) == null ? void 0 : i.message) ?? "Payment failed", this.render(), (a = (n = this.options).onFailed) == null || a.call(n, { session_id: this.options.sessionId, status: "FAILED", message: this.errorMsg });
+      }), l = await d.json();
+      if (!d.ok) {
+        this.step = "failed", this.errorMsg = (l == null ? void 0 : l.message) ?? ((r = l == null ? void 0 : l.error) == null ? void 0 : r.message) ?? "Payment failed", this.render(), (a = (s = this.options).onFailed) == null || a.call(s, { session_id: this.options.sessionId, status: "FAILED", message: this.errorMsg });
         return;
       }
-      this.step = "success", this.render(), (d = (l = this.options).onSuccess) == null || d.call(l, {
+      this.step = "success", this.render(), (n = (c = this.options).onSuccess) == null || n.call(c, {
         session_id: this.options.sessionId,
         status: "COMPLETED",
-        reference: o.transfer_reference ?? o.reference,
-        receipt_url: o.receipt_url
+        reference: l.transfer_reference ?? l.reference,
+        receipt_url: l.receipt_url
       });
     } catch {
       this.step = "failed", this.errorMsg = "Network error. Please try again.", this.render();
@@ -293,17 +349,23 @@ class $ {
   safeColor(e) {
     return e && /^#[0-9a-fA-F]{6}$/.test(e) ? e : null;
   }
+  headers() {
+    return {
+      "Content-Type": "application/json",
+      ...this.options.sessionToken ? { "X-Session-Token": this.options.sessionToken } : {}
+    };
+  }
 }
-let h = null;
-function T(g) {
-  h && h.destroy(), h = new $(g), h.mount();
+let p = null;
+function U(w) {
+  p && p.destroy(), p = new P(w), p.mount();
 }
-function U() {
-  h == null || h.destroy(), h = null;
+function A() {
+  p == null || p.destroy(), p = null;
 }
 export {
-  $ as AstroCheckout,
-  T as checkout,
-  U as dismiss
+  P as AstroCheckout,
+  U as checkout,
+  A as dismiss
 };
 //# sourceMappingURL=astro.js.map

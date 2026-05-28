@@ -6,6 +6,7 @@ public final class AstroClient {
     public let alias: AliasClient
     public let openBanking: OpenBankingClient
     public let identity: IdentityClient
+    public let presentments: PresentmentsClient
 
     private let http: AstroHTTPClient
 
@@ -15,6 +16,7 @@ public final class AstroClient {
         alias = AliasClient(http: http)
         openBanking = OpenBankingClient(http: http)
         identity = IdentityClient(http: http)
+        presentments = PresentmentsClient(http: http)
     }
 
     public func webhookVerifier(secret: String) -> WebhookVerifier {

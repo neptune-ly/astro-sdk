@@ -3,6 +3,7 @@ import 'payments/payments_client.dart';
 import 'alias/alias_client.dart';
 import 'openbanking/openbanking_client.dart';
 import 'identity/identity_client.dart';
+import 'presentments/presentments_client.dart';
 import 'webhooks/webhook_verifier.dart';
 
 export 'models/models.dart';
@@ -10,6 +11,7 @@ export 'payments/payments_client.dart';
 export 'alias/alias_client.dart';
 export 'openbanking/openbanking_client.dart';
 export 'identity/identity_client.dart';
+export 'presentments/presentments_client.dart';
 export 'webhooks/webhook_verifier.dart';
 
 class AstroConfig {
@@ -33,6 +35,7 @@ class AstroClient {
   late final AliasClient alias;
   late final OpenBankingClient openBanking;
   late final IdentityClient identity;
+  late final PresentmentsClient presentments;
 
   AstroClient(AstroConfig config) {
     final http = AstroHttpClient(
@@ -46,6 +49,7 @@ class AstroClient {
     alias = AliasClient(http);
     openBanking = OpenBankingClient(http);
     identity = IdentityClient(http);
+    presentments = PresentmentsClient(http);
   }
 
   WebhookVerifier webhookVerifier(String secret) => WebhookVerifier(secret);

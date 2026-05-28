@@ -7,6 +7,7 @@ export declare class AstroCheckout {
     private aliasValue;
     private errorMsg;
     private sessionData;
+    private selectedAuth;
     constructor(options: CheckoutOptions);
     mount(): void;
     destroy(): void;
@@ -15,10 +16,13 @@ export declare class AstroCheckout {
     private renderHTML;
     private bindEvents;
     private handleAliasContinue;
+    private handleAuthSelect;
+    private pollPushStatus;
     private handleOtpConfirm;
     private handleDismiss;
     private resolveTheme;
     private escapeHtml;
     private safeUrl;
     private safeColor;
+    private headers;
 }

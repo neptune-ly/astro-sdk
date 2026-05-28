@@ -75,10 +75,18 @@ The SDK surface now includes the implementation rules for OpenWave **presented p
 
 - merchant-presented QR
 - merchant-presented NFC
-- customer-presented wallet or bank-app tokens
+- merchant-presented app handoff
 - presented recurring mandate approval
 
 These SDKs do not move OTP, PIN, or push approval into merchant UI. Scan or tap only starts the flow. Final customer authorization still happens in the hosted or secure SDK surface defined by OpenWave.
+
+For Libya QR interoperability, OpenWave QR uses the normal EMV TLV container instead of a separate proprietary QR format. The default OpenWave template is Merchant Account Information tag `26` with `26.00 = LY.OPENWAVE`, `26.01 = presentment_id`, `26.02 = claim_token`, `26.03 = QR`, and `26.04 = P` for payment or `M` for mandate approval. Optional operator metadata uses tag `50` with `50.00 = LY.OPENWAVE.OP` and `50.01 = operator_id`. Existing NUMO/LYPay QR codes keep their current route; scanners route to OpenWave only when the `LY.OPENWAVE` GUI is present.
+
+NFC uses an NFC Forum NDEF URI record, preferably an HTTPS universal/app link to the same presentment claim resource. Android and iOS apps can scan/tap first, but they must open the claim-returned hosted, SDK, bank-app, or wallet-controlled authorization surface before approval.
+
+For recurring mandate approval, the claim response should use `auth_surface.type = "HOSTED_MANDATE_CONSENT"` or return `mandate_consent_url`.
+
+Fulfilment must stay server-side. Merchant backends should fulfil orders or activate subscriptions only after verifying a signed final event, normally `payment.completed`; frontend redirects, mobile callbacks, and `payment.settlement_pending` are not fulfilment proof.
 
 Banks and wallets can also implement the same presented-payment channel directly when their operator enables it. The SDK guides below describe both the gateway-mediated and direct-operator models.
 

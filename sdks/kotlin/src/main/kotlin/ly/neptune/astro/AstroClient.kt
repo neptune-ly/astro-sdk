@@ -14,6 +14,7 @@ import ly.neptune.astro.payments.PaymentsClient
 import ly.neptune.astro.alias.AliasClient
 import ly.neptune.astro.openbanking.OpenBankingClient
 import ly.neptune.astro.identity.IdentityClient
+import ly.neptune.astro.presentments.PresentmentsClient
 import ly.neptune.astro.webhooks.WebhookVerifier
 
 data class AstroConfig(
@@ -116,6 +117,7 @@ class AstroClient(config: AstroConfig) : AutoCloseable {
     val alias = AliasClient(engine)
     val openBanking = OpenBankingClient(engine)
     val identity = IdentityClient(engine)
+    val presentments = PresentmentsClient(engine)
     val webhooks = WebhookVerifier
 
     override fun close() = engine.close()

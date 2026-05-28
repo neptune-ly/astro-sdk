@@ -1,0 +1,23 @@
+.DS_Store
+*.log
+
+# Local dependency/build caches
+node_modules/
+.vitepress/cache/
+.vitepress/dist/
+**/.gradle/
+**/.dart_tool/
+**/.build/
+**/build/
+**/bin/
+**/pubspec.lock
+
+# Demo captures and generated media
+recordings/
+screenshots/
+playwright-report/
+test-results/
+*.webm
+*.mp4
+*.mov
+*.m4v

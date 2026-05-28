@@ -1,5 +1,5 @@
 type Currency = 'LYD' | 'USD' | 'EUR' | 'GBP' | string;
-type PaymentStatus = 'PENDING' | 'OTP_SENT' | 'PUSH_SENT' | 'PROCESSING' | 'SETTLEMENT_PENDING' | 'CONFIRMED' | 'COMPLETED' | 'FAILED' | 'EXPIRED' | 'CANCELLED';
+type PaymentStatus = 'PENDING' | 'OTP_SENT' | 'PUSH_SENT' | 'PROCESSING' | 'SETTLEMENT_PENDING' | 'RECONCILIATION_REQUIRED' | 'CONFIRMED' | 'COMPLETED' | 'FAILED' | 'EXPIRED' | 'CANCELLED';
 type MandateStatus = 'PENDING_CONSENT' | 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'EXPIRED';
 type ConsentStatus = 'PENDING' | 'ACTIVE' | 'REVOKED' | 'EXPIRED';
 type PaymentOrderStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REJECTED' | 'PENDING_SCA';
@@ -24,8 +24,10 @@ interface AstroError {
     detail?: string;
     request_id?: string;
 }
-type WebhookEvent = 'payment.completed' | 'payment.settlement_pending' | 'payment.failed' | 'payment.expired' | 'mandate.activated' | 'mandate.cancelled' | 'mandate.charge.completed' | 'mandate.charge.failed' | 'consent.granted' | 'consent.revoked' | 'consent.expired' | 'payment_order.completed' | 'payment_order.failed' | 'payment_order.pending_sca' | 'payment_order.rejected' | 'presentment.created' | 'presentment.claimed' | 'presentment.expired' | 'presentment.cancelled' | 'credit_assessment.completed' | 'finance_offer.created' | 'finance_offer.accepted' | 'finance_contract.active' | 'finance_contract.failed';
+type WebhookEvent = 'payment.completed' | 'payment.settlement_pending' | 'payment.reconciliation_required' | 'payment.failed' | 'payment.expired' | 'refund.created' | 'refund.processing' | 'refund.completed' | 'refund.failed' | 'mandate.activated' | 'mandate.cancelled' | 'mandate.charge.completed' | 'mandate.charge.failed' | 'consent.granted' | 'consent.revoked' | 'consent.expired' | 'payment_order.completed' | 'payment_order.failed' | 'payment_order.pending_sca' | 'payment_order.rejected' | 'presentment.created' | 'presentment.claimed' | 'presentment.expired' | 'presentment.cancelled' | 'credit_assessment.completed' | 'finance_offer.created' | 'finance_offer.accepted' | 'finance_contract.active' | 'finance_contract.cancelled' | 'finance_contract.failed' | 'repayment.completed' | 'repayment.failed';
 interface WebhookPayload<T = unknown> {
+    id?: string;
+    event_id?: string;
     event: WebhookEvent;
     api_version: string;
     timestamp: string;
@@ -50,21 +52,28 @@ declare class HttpClient {
     setSessionToken(token: string): void;
     clearSessionToken(): void;
     request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T>;
-    get<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T>;
+    get<T>(path: string, params?: Record<string, string | number | undefined>, headers?: Record<string, string>): Promise<T>;
     post<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<T>;
     patch<T>(path: string, body?: unknown): Promise<T>;
     delete<T>(path: string): Promise<T>;
 }
 
 interface CreateSessionParams {
+    payer_alias?: string;
+    payer_iban?: string;
     amount: number;
     currency: Currency;
     destination?: Destination;
     description?: string;
     reference?: string;
+    merchant_reference?: string;
     redirect_url?: string;
+    cancel_url?: string;
     webhook_url?: string;
     metadata?: Record<string, string>;
+}
+interface WriteOptions {
+    idempotencyKey?: string;
 }
 interface FeePreview {
     bank_handle: string;
@@ -81,15 +90,27 @@ interface PaymentSession {
     status: PaymentStatus;
     amount: number;
     currency: Currency;
-    destination: Destination;
+    destination?: Destination | null;
     description?: string;
     reference?: string;
+    merchant_reference?: string;
     checkout_url: string;
+    payment_url?: string;
+    checkout_session_token?: string;
     redirect_url?: string;
+    transfer_reference?: string;
+    settlement_type?: string;
+    lypay_ref?: string;
+    creditor_bank_handle?: string;
+    settlement_pending_at?: string;
+    error_code?: string;
+    error_message?: string;
     created_at: string;
     expires_at: string;
+    confirmed_at?: string;
     completed_at?: string;
     gateway_fee?: number;
+    metadata?: unknown;
 }
 interface ListSessionsParams {
     status?: PaymentStatus;
@@ -102,13 +123,28 @@ interface ListSessionsResponse {
     sessions: PaymentSession[];
     pagination: Pagination;
 }
+interface ListMandatesParams {
+    status?: string;
+    page?: number;
+    limit?: number;
+}
 interface CreateMandateParams {
-    customer_alias: string;
-    amount: number;
+    payer_alias?: string;
+    payer_iban?: string;
+    amount_limit?: number;
+    frequency?: 'ON_DEMAND' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | string;
+    consent_redirect_url?: string;
+    merchant_reference?: string;
+    metadata?: Record<string, unknown>;
+    /**
+     * Legacy aliases retained for older integrations.
+     */
+    customer_alias?: string;
+    amount?: number;
     currency: Currency;
-    interval: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    interval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
     description: string;
-    start_date: string;
+    start_date?: string;
     end_date?: string;
     max_amount?: number;
     webhook_url?: string;
@@ -116,33 +152,110 @@ interface CreateMandateParams {
 interface Mandate {
     mandate_id: string;
     status: string;
-    customer_alias: string;
-    amount: number;
+    payer_alias?: string;
+    amount_limit?: number;
+    frequency?: string;
+    consent_url?: string;
+    consented_at?: string;
+    cancelled_at?: string;
+    cancelled_by?: string;
+    merchant_reference?: string;
+    /**
+     * Legacy aliases retained for older integrations.
+     */
+    customer_alias?: string;
+    amount?: number;
     currency: Currency;
-    interval: string;
+    interval?: string;
     description: string;
-    start_date: string;
+    start_date?: string;
     end_date?: string;
     created_at: string;
+}
+interface ChargeMandateParams {
+    amount: number;
+    description: string;
+    merchant_reference?: string;
+    /**
+     * Legacy alias retained for older integrations.
+     */
+    reference?: string;
+}
+interface MandateCharge {
+    charge_id: string;
+    mandate_id: string;
+    status: string;
+    amount: number;
+    currency: Currency;
+    description?: string;
+    merchant_reference?: string;
+    error_code?: string;
+    error_message?: string;
+    created_at: string;
+    executed_at?: string;
+}
+interface ListMandatesResponse {
+    data: Mandate[];
+    total: number;
+    page?: number;
+    limit?: number;
+}
+interface ListMandateChargesResponse {
+    data: MandateCharge[];
+    total: number;
+    page?: number;
+    limit?: number;
+}
+interface CreateRefundParams {
+    amount: number;
+    currency: Currency;
+    reason?: string;
+    merchant_reference: string;
+    metadata?: Record<string, unknown>;
+}
+interface RefundListResponse {
+    data: Refund[];
+    total: number;
+    page?: number;
+    limit?: number;
+}
+interface Refund {
+    refund_id: string;
+    session_id: string;
+    status: 'CREATED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | string;
+    amount: number;
+    currency: Currency;
+    merchant_reference?: string;
+    reason?: string;
+    rail?: string;
+    reversal_reference?: string;
+    failure_reason?: string;
+    failure_message?: string;
+    created_at: string;
+    processing_at?: string;
+    completed_at?: string;
+    failed_at?: string;
 }
 declare class PaymentsClient {
     private http;
     constructor(http: HttpClient);
-    createSession(params: CreateSessionParams): Promise<PaymentSession>;
+    createSession(params: CreateSessionParams, options?: WriteOptions): Promise<PaymentSession>;
     getSession(sessionId: string): Promise<PaymentSession>;
     listSessions(params?: ListSessionsParams): Promise<ListSessionsResponse>;
     previewFee(bankHandle: string, amount: number): Promise<FeePreview>;
     cancelSession(sessionId: string): Promise<void>;
-    createMandate(params: CreateMandateParams): Promise<Mandate>;
+    createRefund(sessionId: string, params: CreateRefundParams, options?: WriteOptions): Promise<Refund>;
+    listRefunds(sessionId: string): Promise<RefundListResponse>;
+    getRefund(refundId: string): Promise<Refund>;
+    createMandate(params: CreateMandateParams, options?: WriteOptions): Promise<Mandate>;
+    listMandates(params?: ListMandatesParams): Promise<ListMandatesResponse>;
     getMandate(mandateId: string): Promise<Mandate>;
-    cancelMandate(mandateId: string): Promise<void>;
-    chargeMandate(mandateId: string, params: {
-        amount: number;
-        reference?: string;
-    }): Promise<{
-        charge_id: string;
-        status: string;
-    }>;
+    cancelMandate(mandateId: string): Promise<Mandate>;
+    chargeMandate(mandateId: string, params: ChargeMandateParams, options?: WriteOptions): Promise<MandateCharge>;
+    listMandateCharges(mandateId: string, params?: {
+        page?: number;
+        limit?: number;
+    }): Promise<ListMandateChargesResponse>;
 }
 
 /**
@@ -160,15 +273,12 @@ interface ResolvePayerParams {
     payer_iban?: string;
 }
 interface ResolvePayerResult {
-    customer_name: string;
-    phone_masked: string;
+    resolved: boolean;
+    bank_handle: string;
+    bank_name: string;
+    account_name_masked?: string;
+    iban_masked: string;
     auth_modes: string[];
-    accounts: Array<{
-        iban: string;
-        account_name?: string;
-        currency: Currency;
-        is_default: boolean;
-    }>;
 }
 interface SelectAuthParams {
     auth_mode: 'OTP' | 'PUSH';
@@ -180,7 +290,6 @@ interface SelectAuthResult {
     push_sent_to?: string;
 }
 interface ConfirmParams {
-    selected_iban: string;
     otp_code?: string;
     push_id?: string;
 }
@@ -193,21 +302,22 @@ interface ConfirmResult {
 declare class CheckoutClient {
     private http;
     constructor(http: HttpClient);
+    private sessionHeaders;
     /**
      * Resolve payer identity from alias or IBAN.
      * Returns masked phone + available accounts for the customer to select from.
      */
-    resolvePayer(sessionId: string, params: ResolvePayerParams): Promise<ResolvePayerResult>;
+    resolvePayer(sessionId: string, params: ResolvePayerParams, sessionToken?: string): Promise<ResolvePayerResult>;
     /**
      * Customer selects authentication method (OTP or PUSH).
      * The bank will send an OTP SMS or push notification.
      */
-    selectAuth(sessionId: string, params: SelectAuthParams): Promise<SelectAuthResult>;
+    selectAuth(sessionId: string, params: SelectAuthParams, sessionToken?: string): Promise<SelectAuthResult>;
     /**
      * Customer confirms payment with OTP code or push approval.
      * On success returns COMPLETED status and the bank transfer reference.
      */
-    confirm(sessionId: string, params: ConfirmParams): Promise<ConfirmResult>;
+    confirm(sessionId: string, params: ConfirmParams, sessionToken?: string): Promise<ConfirmResult>;
 }
 
 interface AliasProfile {
@@ -418,10 +528,11 @@ declare class IdentityClient {
 }
 
 type PresentmentChannel = 'QR' | 'NFC';
-type PresentmentMode = 'MERCHANT_PRESENTED' | 'CUSTOMER_PRESENTED';
+type PresentmentMode = 'MERCHANT_PRESENTED';
 type PresentmentIntent = 'ONE_TIME_PAYMENT' | 'MANDATE_APPROVAL';
 type PresentmentAmountMode = 'FIXED' | 'OPEN';
-type PresentmentStatus = 'CREATED' | 'CLAIMED' | 'PAYMENT_SESSION_CREATED' | 'MANDATE_SESSION_CREATED' | 'CANCELLED' | 'EXPIRED';
+type PresentmentFrequency = 'ON_DEMAND' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+type PresentmentStatus = 'CREATED' | 'PAYMENT_SESSION_CREATED' | 'MANDATE_SESSION_CREATED' | 'CANCELLED' | 'EXPIRED';
 interface PresentedPaymentCapabilities {
     operator_id: string;
     deployment_role: 'GATEWAY' | 'BANK' | 'WALLET' | string;
@@ -442,12 +553,20 @@ interface CreatePresentmentParams {
     amount?: number;
     currency: Currency;
     description: string;
+    /**
+     * Required when intent is MANDATE_APPROVAL. The amount becomes the mandate
+     * amount limit and the customer approves this frequency in hosted SCA.
+     */
+    frequency?: PresentmentFrequency;
     merchant_reference?: string;
     payer_alias?: string;
     payer_iban?: string;
     supported_auth_methods?: Array<'OTP' | 'PUSH'>;
     expires_in_seconds?: number;
     metadata?: Record<string, unknown>;
+}
+interface PresentmentWriteOptions {
+    idempotencyKey?: string;
 }
 interface ClaimPresentmentParams {
     claim_token?: string;
@@ -464,6 +583,12 @@ interface PresentmentPayload {
     nfc_payload?: string;
     claim_token?: string;
 }
+interface AuthSurface {
+    type: 'HOSTED_CHECKOUT' | 'HOSTED_MANDATE_CONSENT' | 'SECURE_SDK_SHEET' | 'BANK_APP';
+    url?: string;
+    session_id?: string;
+    expires_at?: string;
+}
 interface Presentment {
     presentment_id: string;
     status: PresentmentStatus;
@@ -479,6 +604,8 @@ interface Presentment {
     payment_session_id?: string;
     payment_url?: string;
     mandate_id?: string;
+    mandate_consent_url?: string;
+    auth_surface?: AuthSurface;
     supported_auth_methods: string[];
     metadata?: unknown;
     claimed_at?: string;
@@ -493,18 +620,28 @@ interface PresentmentStatusResponse {
     payment_session_id?: string;
     payment_url?: string;
     mandate_id?: string;
+    mandate_consent_url?: string;
+    auth_surface?: AuthSurface;
     expires_at: string;
     updated_at: string;
+}
+interface ListPresentmentsResponse {
+    data: Presentment[];
+    total: number;
+    page?: number;
+    limit?: number;
 }
 declare class PresentmentsClient {
     private http;
     constructor(http: HttpClient);
     capabilities(): Promise<PresentedPaymentCapabilities>;
-    create(params: CreatePresentmentParams): Promise<Presentment>;
-    list(): Promise<{
-        presentments: Presentment[];
-    }>;
+    create(params: CreatePresentmentParams, options?: PresentmentWriteOptions): Promise<Presentment>;
     get(presentmentId: string): Promise<Presentment>;
+    list(params?: {
+        status?: PresentmentStatus;
+        page?: number;
+        limit?: number;
+    }): Promise<ListPresentmentsResponse>;
     claim(presentmentId: string, params: ClaimPresentmentParams): Promise<Presentment>;
     cancel(presentmentId: string): Promise<Presentment>;
     status(presentmentId: string): Promise<PresentmentStatusResponse>;
@@ -724,4 +861,4 @@ declare function createCheckoutClient(opts: {
     timeout?: number;
 }): CheckoutClient;
 
-export { type AcceptFinanceOfferParams, type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type BankCapabilities, type BankEntry, CheckoutClient, type ClaimHandleParams, type ClaimPresentmentParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateCreditAssessmentParams, type CreateFinanceOfferParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreatePresentmentParams, type CreateSessionParams, type CreditAssessment, type CreditAssessmentPurpose, type CreditAssessmentStatus, type Currency, type DataWindow, type Destination, type FeePreview, FinanceAssessmentsClient, type FinanceCapabilities, FinanceClient, type FinanceContract, type FinanceContractStatus, FinanceContractsClient, type FinanceOffer, type FinanceOfferStatus, FinanceOffersClient, type FinanceProductType, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateStatus, type MurabahaTerms, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type PresentedPaymentCapabilities, type Presentment, type PresentmentAmountMode, type PresentmentChannel, type PresentmentIntent, type PresentmentMode, type PresentmentPayload, type PresentmentStatus, type PresentmentStatusResponse, PresentmentsClient, type RefreshCreditAssessmentParams, type RegistryInfo, type RepaymentInstallment, type RepaymentInstallmentStatus, type RepaymentSchedule, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type Tenor, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };
+export { type AcceptFinanceOfferParams, type AliasAccountsResponse, AliasClient, type AliasProfile, AstroClient, type AstroConfig, type AstroError, AstroRequestError, type AuthSurface, type BankCapabilities, type BankEntry, type ChargeMandateParams, CheckoutClient, type ClaimHandleParams, type ClaimPresentmentParams, type ConfirmParams, type ConfirmResult, type Consent, type ConsentStatus, type CreateConsentParams, type CreateCreditAssessmentParams, type CreateFinanceOfferParams, type CreateMandateParams, type CreatePaymentOrderParams, type CreatePresentmentParams, type CreateRefundParams, type CreateSessionParams, type CreditAssessment, type CreditAssessmentPurpose, type CreditAssessmentStatus, type Currency, type DataWindow, type Destination, type FeePreview, FinanceAssessmentsClient, type FinanceCapabilities, FinanceClient, type FinanceContract, type FinanceContractStatus, FinanceContractsClient, type FinanceOffer, type FinanceOfferStatus, FinanceOffersClient, type FinanceProductType, HttpClient, type IdentityAccount, IdentityClient, type IdentityProfile, type LinkedAccount, type ListMandateChargesResponse, type ListMandatesParams, type ListMandatesResponse, type ListPresentmentsResponse, type ListSessionsParams, type ListSessionsResponse, type Mandate, type MandateCharge, type MandateStatus, type MurabahaTerms, type OBAccount, type OBBalance, type OBScope, type OBTransaction, type OBTransactionsResponse, OpenBankingClient, type Pagination, type PaymentOrder, type PaymentOrderStatus, type PaymentSession, type PaymentStatus, PaymentsClient, type PresentedPaymentCapabilities, type Presentment, type PresentmentAmountMode, type PresentmentChannel, type PresentmentFrequency, type PresentmentIntent, type PresentmentMode, type PresentmentPayload, type PresentmentStatus, type PresentmentStatusResponse, type PresentmentWriteOptions, PresentmentsClient, type RefreshCreditAssessmentParams, type Refund, type RefundListResponse, type RegistryInfo, type RepaymentInstallment, type RepaymentInstallmentStatus, type RepaymentSchedule, type ResolvePayerParams, type ResolvePayerResult, type ResolveResult, type SelectAuthParams, type SelectAuthResult, type Tenor, type TokenResponse, type WebhookEvent, type WebhookHandler, type WebhookPayload, WebhookReceiver, type WriteOptions, createCheckoutClient, createClient, parseWebhookPayload, verifyWebhookSignature };

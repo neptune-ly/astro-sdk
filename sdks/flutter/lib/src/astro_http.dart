@@ -29,7 +29,11 @@ class AstroHttpClient {
   }
 
   Uri _uri(String path, [Map<String, String?>? params]) {
-    final uri = Uri.parse('${baseUrl.trimRight('/')}$path');
+    var normalizedBaseUrl = baseUrl;
+    while (normalizedBaseUrl.endsWith('/')) {
+      normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length - 1);
+    }
+    final uri = Uri.parse('$normalizedBaseUrl$path');
     if (params == null) return uri;
     final clean = Map.fromEntries(
       params.entries.where((e) => e.value != null).map((e) => MapEntry(e.key, e.value!)),
@@ -47,11 +51,16 @@ class AstroHttpClient {
     return _handle(response);
   }
 
-  Future<dynamic> post(String path, [Object? body]) async {
+  Future<dynamic> post(
+    String path, [
+    Object? body,
+    Map<String, String>? extraHeaders,
+  ]) async {
+    final headers = {..._defaultHeaders, ...?extraHeaders};
     final response = await http
         .post(
           _uri(path),
-          headers: _defaultHeaders,
+          headers: headers,
           body: body != null ? jsonEncode(body) : null,
         )
         .timeout(timeout);

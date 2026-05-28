@@ -49,7 +49,7 @@ checkout({
 
 ## How It Works
 
-1. **Your backend** creates a payment session via `POST /payments/sessions` and returns the `session_id` to your frontend
+1. **Your backend** creates a payment session via `POST /payments/initiate` and returns the `session_id` to your frontend
 2. **You call `checkout({ sessionId })`** — the widget opens
 3. **Customer enters their NPT alias or IBAN** — Astro resolves it with the gateway and identity registry
 4. **Customer authenticates with bank SCA** — OTP or push approval is handled in the hosted surface
@@ -91,9 +91,15 @@ Your page                  Widget                    Astro Gateway
 
 ## Presented Payments
 
-The web drop-in is also the correct authorization surface after a QR or NFC presentment is claimed. Your merchant page may display a QR code or expose an NFC handoff, but once the customer claims that presentment the secure widget or hosted checkout owns the SCA step.
+The web drop-in is also the correct authorization surface after a QR or NFC presentment is claimed. Your merchant page may display a QR code or expose an NFC handoff, but once the customer claims that presentment the claim-returned hosted URL, secure session, or SDK sheet owns the SCA step.
 
-For recurring subscriptions, presentment may start the mandate approval flow, but the customer still sees the full mandate scope, amount rules, and frequency before approving with bank OTP or push.
+QR rendering should use the operator-returned `qr_payload.value` when available. For Libya interoperability this value is an EMV/NUMO-compatible TLV payload with the OpenWave template in tag `26` and optional operator metadata in tag `50`; do not invent a second merchant QR format in the browser. NFC handoff should use an NDEF URI or universal/app link that resolves to the same presentment claim.
+
+For recurring subscriptions, presentment may start the mandate approval flow. The claim response should use `auth_surface.type = "HOSTED_MANDATE_CONSENT"` or return `mandate_consent_url`, and the customer still sees the full mandate scope, amount rules, and frequency before approving with bank OTP or push.
+
+Merchant pages must not render OTP, PIN, passcode, push approval, or bank credential inputs for bank authorization.
+
+Fulfilment must happen on your backend after a signed `payment.completed` webhook or final server status confirms completion. Do not ship goods or activate subscriptions from a browser callback or `payment.settlement_pending`.
 
 ## License
 

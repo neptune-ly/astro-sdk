@@ -73,11 +73,11 @@ var HttpClient = class {
       clearTimeout(timer);
     }
   }
-  get(path, params) {
+  get(path, params, headers) {
     const url = params ? path + "?" + new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== void 0).map(([k, v]) => [k, String(v)])
     ).toString() : path;
-    return this.request("GET", url);
+    return this.request("GET", url, void 0, headers);
   }
   post(path, body, headers) {
     return this.request("POST", path, body, headers);
@@ -95,23 +95,47 @@ var PaymentsClient = class {
   constructor(http) {
     this.http = http;
   }
-  async createSession(params) {
-    return this.http.post("/payments/sessions", params);
+  async createSession(params, options = {}) {
+    return this.http.post(
+      "/payments/initiate",
+      params,
+      idempotencyHeaders(options)
+    );
   }
   async getSession(sessionId) {
-    return this.http.get(`/payments/sessions/${sessionId}`);
+    return this.http.get(`/payments/${sessionId}`);
   }
   async listSessions(params) {
-    return this.http.get("/payments/sessions", params);
+    return this.http.get("/payments", params);
   }
   async previewFee(bankHandle, amount) {
     return this.http.get("/payments/fee", { bankHandle, amount });
   }
   async cancelSession(sessionId) {
-    return this.http.post(`/payments/sessions/${sessionId}/cancel`);
+    return this.http.post(`/payments/${sessionId}/cancel`);
   }
-  async createMandate(params) {
-    return this.http.post("/recurring/mandates", params);
+  async createRefund(sessionId, params, options = {}) {
+    return this.http.post(
+      `/payments/${sessionId}/refunds`,
+      params,
+      idempotencyHeaders(options)
+    );
+  }
+  async listRefunds(sessionId) {
+    return this.http.get(`/payments/${sessionId}/refunds`);
+  }
+  async getRefund(refundId) {
+    return this.http.get(`/payments/refunds/${refundId}`);
+  }
+  async createMandate(params, options = {}) {
+    return this.http.post(
+      "/recurring/mandates",
+      params,
+      idempotencyHeaders(options)
+    );
+  }
+  async listMandates(params) {
+    return this.http.get("/recurring/mandates", params);
   }
   async getMandate(mandateId) {
     return this.http.get(`/recurring/mandates/${mandateId}`);
@@ -119,44 +143,63 @@ var PaymentsClient = class {
   async cancelMandate(mandateId) {
     return this.http.delete(`/recurring/mandates/${mandateId}`);
   }
-  async chargeMandate(mandateId, params) {
-    return this.http.post(`/recurring/mandates/${mandateId}/charge`, params);
+  async chargeMandate(mandateId, params, options = {}) {
+    return this.http.post(
+      `/recurring/mandates/${mandateId}/charge`,
+      params,
+      idempotencyHeaders(options)
+    );
+  }
+  async listMandateCharges(mandateId, params) {
+    return this.http.get(
+      `/recurring/mandates/${mandateId}/charges`,
+      params
+    );
   }
 };
+function idempotencyHeaders(options) {
+  return options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : void 0;
+}
 
 // src/checkout/index.ts
 var CheckoutClient = class {
   constructor(http) {
     this.http = http;
   }
+  sessionHeaders(sessionToken) {
+    return sessionToken ? { "X-Session-Token": sessionToken } : void 0;
+  }
   /**
    * Resolve payer identity from alias or IBAN.
    * Returns masked phone + available accounts for the customer to select from.
    */
-  async resolvePayer(sessionId, params) {
+  async resolvePayer(sessionId, params, sessionToken) {
     return this.http.post(
-      `/payments/sessions/${sessionId}/resolve-payer`,
-      params
+      `/session/${sessionId}/resolve-payer`,
+      params,
+      this.sessionHeaders(sessionToken)
     );
   }
   /**
    * Customer selects authentication method (OTP or PUSH).
    * The bank will send an OTP SMS or push notification.
    */
-  async selectAuth(sessionId, params) {
+  async selectAuth(sessionId, params, sessionToken) {
     return this.http.post(
-      `/payments/sessions/${sessionId}/select-auth`,
-      params
+      `/session/${sessionId}/select-auth`,
+      params,
+      this.sessionHeaders(sessionToken)
     );
   }
   /**
    * Customer confirms payment with OTP code or push approval.
    * On success returns COMPLETED status and the bank transfer reference.
    */
-  async confirm(sessionId, params) {
+  async confirm(sessionId, params, sessionToken) {
     return this.http.post(
-      `/payments/sessions/${sessionId}/confirm`,
-      params
+      `/session/${sessionId}/confirm-otp`,
+      params,
+      this.sessionHeaders(sessionToken)
     );
   }
 };
@@ -215,15 +258,16 @@ var OpenBankingClient = class {
     return this.http.post("/ob/token/revoke", { token });
   }
   async getAccounts(consentId) {
-    return this.http.get("/ob/accounts", void 0);
+    return this.http.get("/ob/accounts", void 0, consentHeaders(consentId));
   }
   async getBalances(accountId, consentId) {
-    return this.http.get(`/ob/accounts/${accountId}/balances`);
+    return this.http.get(`/ob/accounts/${accountId}/balances`, void 0, consentHeaders(consentId));
   }
   async getTransactions(accountId, consentId, params) {
     return this.http.get(
       `/ob/accounts/${accountId}/transactions`,
-      params
+      params,
+      consentHeaders(consentId)
     );
   }
   async createPaymentOrder(params, consentId) {
@@ -235,6 +279,9 @@ var OpenBankingClient = class {
     return this.http.get(`/ob/payment-orders/${orderId}`);
   }
 };
+function consentHeaders(consentId) {
+  return { "X-Consent-Id": consentId };
+}
 
 // src/identity/index.ts
 var IdentityClient = class {
@@ -280,14 +327,18 @@ var PresentmentsClient = class {
   async capabilities() {
     return this.http.get("/capabilities");
   }
-  async create(params) {
-    return this.http.post("/presentments", params);
-  }
-  async list() {
-    return this.http.get("/presentments");
+  async create(params, options = {}) {
+    return this.http.post(
+      "/presentments",
+      params,
+      options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : void 0
+    );
   }
   async get(presentmentId) {
     return this.http.get(`/presentments/${presentmentId}`);
+  }
+  async list(params) {
+    return this.http.get("/presentments", params);
   }
   async claim(presentmentId, params) {
     return this.http.post(`/presentments/${presentmentId}/claim`, params);
@@ -386,11 +437,32 @@ async function hmacSha256(secret, data) {
   return createHmac("sha256", secret).update(data).digest("hex");
 }
 async function verifyWebhookSignature(rawBody, signature, secret) {
-  const expected = "sha256=" + await hmacSha256(secret, rawBody);
-  return signature === expected;
+  const expected = await hmacSha256(secret, rawBody);
+  const actual = normalizeSignature(signature);
+  return timingSafeEqualHex(actual, expected);
 }
 function parseWebhookPayload(rawBody) {
   return JSON.parse(rawBody);
+}
+function normalizeSignature(signature) {
+  const trimmed = signature.trim();
+  if (trimmed.startsWith("sha256=")) return trimmed.slice("sha256=".length);
+  if (trimmed.startsWith("v1=")) return trimmed.slice("v1=".length);
+  return trimmed;
+}
+async function timingSafeEqualHex(actual, expected) {
+  if (!/^[0-9a-f]+$/i.test(actual) || !/^[0-9a-f]+$/i.test(expected) || actual.length !== expected.length) {
+    return false;
+  }
+  if (typeof process !== "undefined" && process.versions?.node) {
+    const { timingSafeEqual } = await import("crypto");
+    return timingSafeEqual(Buffer.from(actual, "hex"), Buffer.from(expected, "hex"));
+  }
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= expected.charCodeAt(i) ^ actual.charCodeAt(i);
+  }
+  return diff === 0;
 }
 var WebhookReceiver = class {
   constructor(secret) {
