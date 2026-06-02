@@ -55,6 +55,10 @@ checkout({
 4. **Customer authenticates with bank SCA** — OTP or push approval is handled in the hosted surface
 5. **Payment completes** — `onSuccess` fires and Astro sends a signed webhook to your backend
 
+Astro renders approved merchant, bank, TPP, and gateway branding inside the hosted surface when the session includes it. Your page may show the same approved display name, logo, brand color, and environment label around the checkout button, but those values are not a security decision and cannot replace backend webhook verification.
+
+For production launch guidance, see the [Astro SDK production readiness guide](https://neptune-ly.github.io/astro-sdk/guide/production-readiness.html).
+
 ## Flow Diagram
 
 ```

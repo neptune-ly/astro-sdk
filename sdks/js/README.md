@@ -37,6 +37,22 @@ const session = await astro.payments.createSession({
 console.log(session.checkout_url) // redirect customer here
 ```
 
+## Environments and Branding
+
+Keep sandbox and live integrations as separate backend configurations. Use separate merchant keys, webhook secrets, redirect origins, callback URLs, and reconciliation targets; do not pass an environment switch from browser or mobile code.
+
+Hosted session responses may include approved merchant branding and environment metadata:
+
+```ts
+const session = await astro.payments.getSession(sessionId)
+
+console.log(session.environment)                 // 'SANDBOX' | 'LIVE'
+console.log(session.merchant_branding?.logo_url) // render-only display metadata
+console.log(session.merchant_branding?.brand_color)
+```
+
+Treat branding as display metadata only. Your backend must still verify final signed webhooks or trusted server status before fulfilment.
+
 ## Modules
 
 | Module | Use it for | Runs where |

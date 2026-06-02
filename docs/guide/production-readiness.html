@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Production readiness | Neptune. Astro SDK</title>
+    <meta name="description" content="Production readiness guidance for Astro SDK sandbox/live separation, branding, security, and launch checks." />
+    <meta name="theme-color" content="#07315F" />
+    <link rel="icon" href="/astro-sdk/astro-mark.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --navy: #07315f;
+        --teal: #00a8ae;
+        --coral: #eb4e4d;
+        --ink: #071a2f;
+        --muted: #5c6877;
+        --line: #dce4ea;
+        --paper: #f7f8f6;
+        --panel: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+      }
+      a { color: var(--navy); }
+      .shell { width: min(1040px, calc(100% - 40px)); margin: 0 auto; }
+      header {
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand { display: inline-flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; font-weight: 800; }
+      .brand img { width: 38px; height: 38px; }
+      nav { display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: 14px; font-weight: 650; }
+      nav a { color: inherit; text-decoration: none; }
+      .hero { padding: 74px 0 34px; }
+      .eyebrow { color: var(--teal); font-size: 13px; font-weight: 820; letter-spacing: .14em; text-transform: uppercase; }
+      h1 { margin: 12px 0 0; max-width: 860px; font-size: clamp(42px, 8vw, 74px); line-height: .98; letter-spacing: -0.04em; }
+      .lede { max-width: 790px; color: var(--muted); font-size: 20px; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 28px 0; }
+      .card, .band {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 18px 50px rgba(7, 49, 95, .08);
+      }
+      .card { padding: 20px; }
+      .card b { display: block; margin-bottom: 8px; }
+      .band { padding: 28px; margin: 24px 0; }
+      h2 { margin: 0 0 14px; font-size: 28px; letter-spacing: -0.02em; }
+      h3 { margin: 22px 0 8px; font-size: 20px; }
+      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+      pre { overflow: auto; padding: 16px; border-radius: 8px; background: #0b1f35; color: #e8f3f7; }
+      table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+      th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+      .warn { border-left: 4px solid var(--coral); padding-left: 14px; color: #56302f; }
+      footer { margin: 52px 0 34px; color: var(--muted); font-size: 14px; }
+      @media (max-width: 760px) {
+        header { align-items: flex-start; flex-direction: column; padding: 18px 0; }
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="shell">
+      <a class="brand" href="/astro-sdk/"><img src="/astro-sdk/astro-mark.svg" alt="" />Neptune. Astro</a>
+      <nav>
+        <a href="/astro-sdk/guide/introduction.html">Guide</a>
+        <a href="/astro-sdk/sdks/typescript.html">TypeScript SDK</a>
+        <a href="/astro-sdk/sdks/web.html">Web Drop-in</a>
+        <a href="https://neptune-ly.github.io/openwave-spec/guide/production-readiness.html">OpenWave readiness</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Production readiness</p>
+        <h1>Ship Astro integrations with clear sandbox/live boundaries and trusted branding.</h1>
+        <p class="lede">Astro SDKs keep merchant keys server-side, use hosted authorization surfaces for customer decisions, and expose branding metadata so checkout, QR, NFC, Open Banking, and mandate flows identify the merchant and operating environment clearly.</p>
+      </section>
+
+      <section class="grid" aria-label="Readiness summary">
+        <article class="card"><b>Environment separation</b>Use separate sandbox and live keys, webhook secrets, redirect origins, and settlement configuration. Never switch a live payment by a browser flag or customer input.</article>
+        <article class="card"><b>Trusted branding</b>Show merchant display names, approved logos, support contacts, and bank/operator identity from server-returned metadata, not frontend overrides.</article>
+        <article class="card"><b>Final-state fulfilment</b>Fulfil only after a signed final webhook or trusted server status. Browser callbacks and settlement-pending states are not proof of completion.</article>
+      </section>
+
+      <section class="band">
+        <h2>Sandbox and live</h2>
+        <table>
+          <thead><tr><th>Surface</th><th>Sandbox</th><th>Live</th></tr></thead>
+          <tbody>
+            <tr><td>Merchant key</td><td>Use sandbox credentials for tests and demos.</td><td>Use live credentials only from the production backend.</td></tr>
+            <tr><td>Webhook endpoint</td><td>Validate signature handling, retries, and idempotency with non-production order records.</td><td>Use a dedicated production endpoint, short replay window, and monitored delivery failures.</td></tr>
+            <tr><td>Checkout and consent UI</td><td>Show sandbox environment labels and test-bank rails.</td><td>Show production merchant, bank, and operator branding with no test copy.</td></tr>
+            <tr><td>Readiness</td><td>Exercise checkout, QR/NFC claim, mandates, Open Banking consent, and webhooks.</td><td>Enable only after branding, origins, keys, and callback URLs are approved.</td></tr>
+          </tbody>
+        </table>
+        <p class="warn">Do not put live merchant keys, webhook secrets, bank credentials, OTPs, PINs, passcodes, or push approvals in browser or mobile merchant code.</p>
+      </section>
+
+      <section class="band">
+        <h2>Branding metadata</h2>
+        <p>Astro-hosted checkout and SDK sessions may include merchant, bank, TPP, and gateway branding. Render these values as display metadata only; do not trust frontend-supplied branding for account routing, authorisation, fulfilment, or settlement decisions.</p>
+        <pre><code>{
+  "environment": "SANDBOX",
+  "merchant_branding": {
+    "display_name": "Ezone",
+    "logo_url": "https://astro.example.com/api/v1/assets/branding/merchant_ezone.png",
+    "brand_color": "#07315F",
+    "support_email": "support@example.com",
+    "website": "https://merchant.example"
+  }
+}</code></pre>
+        <h3>SDK handling</h3>
+        <p>Backend SDKs create the session or presentment. Frontend SDKs open the returned hosted URL or scoped session and allow Astro to render the approved merchant and operator identity. Merchant pages may show the same approved logo beside a “Pay with Astro” button, but they must not collect the bank decision themselves.</p>
+      </section>
+
+      <section class="band">
+        <h2>Launch checklist</h2>
+        <ul>
+          <li>Use server-side session creation with idempotency keys and a clear order reference.</li>
+          <li>Configure allowed redirect origins per environment.</li>
+          <li>Upload and review merchant logos, display names, brand colors, support email, and website.</li>
+          <li>Verify signed webhooks for payment, mandate, Open Banking, finance, refund, and failure events used by the integration.</li>
+          <li>Test QR and NFC presentment claim flows through the returned hosted or SDK-controlled authorization surface.</li>
+          <li>Confirm production callback URLs, webhook retry handling, reconciliation, and operational contacts before live credentials are issued.</li>
+        </ul>
+      </section>
+
+      <section class="band">
+        <h2>Related references</h2>
+        <p><a href="https://neptune-ly.github.io/openwave-spec/guide/production-readiness.html">OpenWave Production Readiness</a> defines the standard-level control model. <a href="https://neptune-ly.github.io/openwave-identity/">OpenWave Identity</a> documents bank-scoped NPT routing and public bank directory branding.</p>
+      </section>
+    </main>
+
+    <footer class="shell">Built on the OpenWave open standard. © Neptune Fintech.</footer>
+  </body>
+</html>

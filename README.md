@@ -56,6 +56,14 @@ dependencies {
 
 Built on the [OpenWave](https://neptune-ly.github.io/openwave-spec/) open payment standard.
 
+## Sandbox, Live, and Branding
+
+Production integrations must keep sandbox and live traffic separated at the backend: different merchant keys, webhook secrets, redirect origins, callback URLs, and reconciliation targets. Browser and mobile SDKs receive only a scoped session, hosted URL, or presentment claim result.
+
+Astro-hosted checkout and consent surfaces can render approved merchant, bank, TPP, and gateway branding from server-returned metadata such as display name, logo URL, brand color, support email, website, and environment. Merchant apps may display that approved metadata beside checkout buttons or QR/NFC presentments, but fulfilment still waits for signed final webhooks or trusted server status.
+
+See the [Astro SDK production readiness guide](https://neptune-ly.github.io/astro-sdk/guide/production-readiness.html) and the [OpenWave production readiness guide](https://neptune-ly.github.io/openwave-spec/guide/production-readiness.html).
+
 ## Credit & Finance
 
 The SDK documentation now covers OpenWave **Credit & Finance** targets:
